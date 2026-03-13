@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>MLC Tattoo Supplies</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<nav>
+
+    <div class="nav-left">
+        <a href="#home" class="logo">
+            <img src="/images/mlc-logo.png" alt="MLC Logo">
+        </a>
+    </div>
+
+    <div class="nav-center">
+    <a href="#home">Home</a>
+    <a href="#portfolio">Portfolio</a>
+    <a href="#schedule">Schedule</a>
+    <a href="#about">About</a>
+    <a href="/booking/check">Book Appointment</a>
+</div>
+
+<div class="nav-right" id="authArea"></div>
+
+</nav>
+
+<!-- AUTH SCRIPT -->
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+
+    fetch('/auth/status')
+    .then(res=>res.json())
+    .then(data=>{
+
+        const nav = document.getElementById("authArea");
+
+        if(data.loggedIn){
+            nav.innerHTML = `
+                <a href="/mybookings.html" class="nav-white">My Bookings</a>
+                <a href="/auth/logout" class="nav-red">Logout</a>
+            `;
+        } else {
+            nav.innerHTML = `
+                <a href="/login.html" class="nav-red">Register / Login</a>
+            `;
+        }
+
+        highlightNav();
+
+    });
+
+});
+
+/* ACTIVE SECTION HIGHLIGHT */
+function highlightNav(){
+
+    const sections = document.querySelectorAll("section");
+    const navLinks = document.querySelectorAll(".nav-center a");
+
+    window.addEventListener("scroll", ()=>{
+
+        let current="";
+
+        sections.forEach(section=>{
+            const sectionTop = section.offsetTop - 150;
+
+            if(window.pageYOffset >= sectionTop){
+                current = section.getAttribute("id");
+            }
+        });
+
+        navLinks.forEach(link=>{
+            link.classList.remove("active");
+
+            if(link.getAttribute("href") === "#"+current){
+                link.classList.add("active");
+            }
+        });
+
+    });
+}
+</script>
+
+<!-- HOME -->
+<section id="home">
+<h1>MLC Tattoo</h1>
+
+<p>
+Custom Tattoos • Realism • Blackwork • Minimalist
+</p>
+
+<p>
+Professional tattoo studio delivering high-quality custom designs
+crafted with precision, safety, and creativity.
+</p>
+<br>
+<a href="/booking/check" class="btn">Book Now</a>
+</section>
+
+<!-- PORTFOLIO -->
+<section id="portfolio">
+<h2>Our Tattoo Categories</h2>
+
+<div class="portfolio-grid">
+
+<div class="category" onclick="openGallery('legs')">
+    <h3>Legs</h3>
+    <img src="/images/legs1.jpg">
+</div>
+
+<div class="category" onclick="openGallery('back')">
+    <h3>Back</h3>
+    <img src="/images/back1.jpg">
+</div>
+
+<div class="category" onclick="openGallery('arm')">
+    <h3>Arm</h3>
+    <img src="/images/arm1.jpg">
+</div>
+
+<div class="category" onclick="openGallery('chest')">
+    <h3>Chest</h3>
+    <img src="/images/chest1.jpg">
+</div>
+
+</div>
+</section>
+
+<!-- GALLERY MODAL -->
+<div id="galleryModal" class="modal">
+    <div class="modal-content">
+        <a href="javascript:void(0)" onclick="closeGallery()" class="modal-back">✕ Back</a>
+        <div id="galleryImages" class="gallery-grid"></div>
+    </div>
+</div>
+
+<!-- IMAGE ZOOM MODAL -->
+<div id="imageZoomModal" class="zoom-modal">
+
+    <span class="zoom-close" onclick="closeZoom()">✕</span>
+
+    <span class="zoom-arrow left" onclick="prevImage()">❮</span>
+
+    <img id="zoomedImage">
+
+    <span class="zoom-arrow right" onclick="nextImage()">❯</span>
+
+</div>
+
+<script>
+let currentImages = [];
+let currentIndex = 0;
+
+function openGallery(type){
+
+    const modal = document.getElementById('galleryModal');
+    const container = document.getElementById('galleryImages');
+    container.innerHTML = "";
+    currentImages = [];
+
+    const maxImages = 20; // pwede mo taasan anytime
+
+for(let i=1;i<=maxImages;i++){
+
+    const imagePath = `/images/${type}${i}.jpg`;
+
+    currentImages.push(imagePath);
+
+    container.innerHTML += `
+    <img src="${imagePath}"
+         onerror="this.style.display='none'"
+         onclick="zoomImage(${i-1})">
+    `;
+}
+    modal.style.display = "flex";
+    document.body.style.overflow = "hidden";
+}
+
+function closeGallery(){
+    document.getElementById('imageZoomModal').style.display = "none";
+    document.getElementById('galleryModal').style.display = "none";
+    document.body.style.overflow = "auto";
+}
+
+function zoomImage(index){
+    currentIndex = index;
+    document.getElementById('zoomedImage').src = currentImages[currentIndex];
+    document.getElementById('imageZoomModal').style.display = "flex";
+}
+
+function closeZoom(){
+    document.getElementById('imageZoomModal').style.display = "none";
+}
+
+function nextImage(){
+
+currentIndex++;
+
+if(currentIndex >= currentImages.length){
+    currentIndex = 0;
+}
+
+const img = document.getElementById('zoomedImage');
+img.src = currentImages[currentIndex];
+
+img.onerror = function(){
+    currentIndex = 0;
+    img.src = currentImages[0];
+};
+
+}
+
+function prevImage(){
+
+currentIndex--;
+
+if(currentIndex < 0){
+    currentIndex = currentImages.length - 1;
+}
+
+const img = document.getElementById('zoomedImage');
+img.src = currentImages[currentIndex];
+
+img.onerror = function(){
+    currentIndex = 0;
+    img.src = currentImages[0];
+};
+
+}
+</script>
+
+<section id="schedule">
+
+<h2 class="schedule-title">Booking Schedule</h2>
+
+<div class="calendar-wrapper">
+
+<div class="calendar-header">
+
+<button class="calendar-btn" onclick="prevMonth()">◀</button>
+
+<h2 id="monthYear"></h2>
+
+<button class="calendar-btn" onclick="nextMonth()">▶</button>
+
+</div>
+
+<div class="calendar-container">
+
+<div class="calendar-days">
+<div>Sun</div>
+<div>Mon</div>
+<div>Tue</div>
+<div>Wed</div>
+<div>Thu</div>
+<div>Fri</div>
+<div>Sat</div>
+</div>
+
+<div class="calendar-grid" id="calendar"></div>
+
+</div>
+
+</div>
+
+<script src="/js/calendar.js"></script>
+
+</section>
+<!-- ABOUT -->
+<section id="about">
+<h2>About Our Tattoo Shop</h2>
+<br>
+<p>
+MLC Tattoo Studio is a professional tattoo shop dedicated to creating
+high-quality custom tattoos that reflect the personality and vision of each client.
+Our artists specialize in realism, blackwork, minimalist, and modern tattoo styles.
+</p>
+
+<p>
+We prioritize safety, cleanliness, and precision in every tattoo session.
+Using professional equipment and sterile procedures,
+we ensure that every client receives not only a beautiful tattoo
+but also a safe and comfortable experience.
+</p>
+
+<p>
+Whether you're looking for your first tattoo or adding to your collection,
+MLC Tattoo Studio is here to turn your ideas into permanent art.
+</p>
+</section>
+
+<div id="dateModal" class="date-modal">
+
+<div class="date-box">
+
+<h3 id="dateTitle"></h3>
+
+<div id="dateBookings"></div>
+
+<br>
+
+<button onclick="closeDateModal()">Close</button>
+
+</div>
+
+</div>
+
+<script>
+
+window.addEventListener("load", () => {
+
+if(performance.getEntriesByType("navigation")[0].type === "reload"){
+
+window.location.href="index.html#home";
+
+}
+
+});
+
+</script>
+
+</body>
+</html>

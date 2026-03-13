@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Book Appointment</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body class="booking-page">
+    <nav>
+    <div class="nav-left">
+        <div class="logo">
+            <img src="images/mlc-logo.png" alt="MLC Tattoo Supplies">
+        </div>
+    </div>
+
+    <div class="nav-right">
+        <a href="index.html" class="nav-red">Back</a>
+    </div>
+    </nav>
+
+<div class="form-container">
+<h2>Book Appointment</h2>
+<form id="bookingForm" enctype="multipart/form-data">
+<input type="date" name="booking_date" required>
+<label>Time:</label>
+<select name="booking_time" required>
+<option value="">Select Time</option>
+<option value="10:00 AM">10:00 AM</option>
+<option value="11:00 AM">11:00 AM</option>
+<option value="12:00 PM">12:00 PM</option>
+<option value="1:00 PM">1:00 PM</option>
+<option value="2:00 PM">2:00 PM</option>
+<option value="3:00 PM">3:00 PM</option>
+<option value="4:00 PM">4:00 PM</option>
+<option value="5:00 PM">5:00 PM</option>
+<option value="6:00 PM">6:00 PM</option>
+</select>
+
+<label>Tattoo Reference:</label>
+<input type="file" name="tattoo_reference" required>
+
+<select name="tattoo_area" required>
+<option value="">Select Tattoo Area</option>
+<option value="Leg">Legs</option>
+<option value="Back">Back</option>
+<option value="Arm">Arms</option>
+<option value="Chest">Chest</option>
+</select>
+
+<label>Proof of Payment:</label>
+<input type="file" name="proof_of_payment" required>
+<input type="text" name="mobile_number" placeholder="Mobile Number" required>
+
+<button type="submit">Submit Booking</button>
+
+</form>
+</div>
+
+<script>
+const form = document.getElementById("bookingForm");
+
+const dateInput = document.querySelector("input[name='booking_date']");
+const timeSelect = document.querySelector("select[name='booking_time']");
+
+dateInput.addEventListener("change", async ()=>{
+
+const date = dateInput.value;
+
+const res = await fetch(`/booking/date-info/${date}`);
+const data = await res.json();
+
+/* count bookings per time */
+
+let timeCount = {};
+
+data.forEach(b=>{
+
+if(!timeCount[b.booking_time]){
+timeCount[b.booking_time]=0;
+}
+
+timeCount[b.booking_time]++;
+
+});
+
+/* disable full times */
+
+Array.from(timeSelect.options).forEach(option=>{
+
+const time = option.value;
+
+if(timeCount[time] >=2){
+
+option.disabled = true;
+option.text = time + " (FULL)";
+
+}
+
+});
+
+});
+
+form.addEventListener("submit", function(e){
+    e.preventDefault();
+
+    fetch('/booking/create', {
+        method:'POST',
+        body:new FormData(form)
+    })
+    .then(res=>res.json())
+    .then(data=>{
+        if(data.success){
+            showToast("Booking submitted successfully! Waiting for admin approval.");
+
+            setTimeout(()=>{
+            window.location.href="/mybookings.html";
+            },2000);
+        }
+    })
+    .catch(()=>{
+    showToast("Error submitting booking.");
+    });
+});
+
+function showToast(message){
+
+const toast = document.getElementById("toast");
+
+toast.textContent = message;
+
+toast.classList.add("show");
+
+setTimeout(()=>{
+toast.classList.remove("show");
+},3000);
+
+}
+
+function showFullModal(date){
+
+const message = document.getElementById("fullMessage");
+
+message.innerText = date + " is already fully booked. Please choose another date.";
+
+document.getElementById("fullModal").style.display = "flex";
+
+}
+
+function closeFullModal(){
+document.getElementById("fullModal").style.display = "none";
+}
+
+</script>
+
+<div id="toast" class="toast"></div>
+
+
+<div id="fullModal" class="cancel-modal">
+
+<div class="cancel-box">
+
+<h3>Schedule Full</h3>
+
+<p id="fullMessage"></p>
+
+<div class="cancel-actions">
+<button onclick="closeFullModal()" class="cancel-no">Close</button>
+</div>
+
+</div>
+
+</div>
+
+
+</body>
+</html>

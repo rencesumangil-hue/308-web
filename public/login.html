@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Login</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="login-page">
+    <nav>
+    <div class="nav-left">
+        <div class="logo">
+            <img src="images/mlc-logo.png" alt="MLC Tattoo Supplies">
+        </div>
+    </div>
+
+    <div class="nav-right">
+        <a href="index.html" class="nav-red">Back</a>
+    </div>
+    </nav>
+
+<div class="form-container">
+<h2>Login</h2>
+<form action="/auth/login" method="POST">
+
+<input type="email" name="email" placeholder="Email" required>
+<input type="password" id="password" name="password" placeholder="Password" required>
+
+<script>
+function togglePass(){
+    const pass = document.getElementById("password");
+    pass.type = pass.type === "password" ? "text" : "password";
+}
+</script>
+<div class="login-row">
+    <label class="show-pass">
+        <input type="checkbox" onclick="togglePass()">
+        Show Password
+    </label>
+
+    <button type="submit">Login</button>
+</div>
+</form>
+<br>
+<p>Don't have account? <a href="/register.html">Register</a></p>
+</div>
+
+<script>
+document.getElementById("showPass").addEventListener("change", function() {
+    const pass = document.getElementById("password");
+    pass.type = this.checked ? "text" : "password";
+});
+</script>
+
+</body>
+</html>

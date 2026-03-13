@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>My Bookings</title>
+<link rel="stylesheet" href="/css/style.css">
+<style>
+
+.booking-card{
+    background:#1a1a1a;
+    padding:20px;
+    margin:20px auto;
+    max-width:500px;
+    border-radius:10px;
+}
+
+</style>
+</head>
+<body>
+
+<a href="/" class="back-btn">Back</a>
+
+<h2 style="margin-top:120px;text-align:center;">My Bookings</h2>
+
+<div id="myBookings"></div>
+
+<script>
+
+let cancelId = null;
+
+/* ================= LOAD BOOKINGS ================= */
+
+fetch('/booking/my')
+.then(res=>res.json())
+.then(data=>{
+
+const container=document.getElementById('myBookings');
+
+if(data.length===0){
+container.innerHTML="<p style='text-align:center;'>No bookings yet.</p>";
+}
+
+data.forEach(b=>{
+
+const datePH = new Date(b.booking_date).toLocaleDateString("en-PH");
+
+container.innerHTML += `
+<div class="booking-card">
+
+<div class="booking-top">
+
+<p><strong>Date:</strong> ${datePH}</p>
+<p><strong>Time:</strong> ${b.booking_time}</p>
+
+${b.status === "Pending" ? 
+`<button class="cancel-btn" onclick="cancelBooking(${b.id})">✕</button>` 
+: ""}
+
+</div>
+
+<p>
+
+${b.status === "Denied" ? `
+<span class="msg-icon" onclick="openClientMessage(${b.id})">
+💬
+<span class="msg-count">${b.client_seen == 0 && b.admin_note ? 1 : ""}</span>
+</span>
+<span class="status denied">Denied</span>
+`
+:
+`<span class="status ${b.status.toLowerCase()}">${b.status}</span>`
+}
+
+</p>
+
+</div>
+`;
+
+});
+
+});
+
+
+/* ================= OPEN MODAL ================= */
+
+function cancelBooking(id){
+cancelId = id;
+document.getElementById("cancelModal").style.display="flex";
+}
+
+
+/* ================= WAIT UNTIL PAGE LOADS ================= */
+
+document.addEventListener("DOMContentLoaded", function(){
+
+/* CLOSE MODAL */
+
+document.getElementById("cancelNo").onclick=function(){
+document.getElementById("cancelModal").style.display="none";
+}
+
+
+/* CONFIRM CANCEL */
+
+document.getElementById("cancelYes").onclick=function(e){
+
+e.stopPropagation();
+
+fetch('/booking/delete/' + cancelId,{
+method:'DELETE'
+})
+.then(res=>res.json())
+.then(data=>{
+if(data.success){
+
+const toast = document.getElementById("toast");
+
+toast.classList.add("show");
+
+setTimeout(()=>{
+location.reload();
+},1500);
+
+}else{
+alert("Failed to cancel booking");
+}
+});
+
+}
+
+});
+
+
+
+let clientBookingId = null;
+
+function openClientMessage(id){
+
+clientBookingId = id;
+
+fetch('/booking/chat/'+id)
+.then(res=>res.json())
+.then(data=>{
+
+const chat=document.getElementById("chatMessages");
+
+chat.innerHTML="";
+
+data.forEach(m=>{
+
+if(m.sender==="admin"){
+chat.innerHTML+=`<div class="admin-msg">${m.message}</div>`;
+}else{
+chat.innerHTML+=`<div class="client-msg">${m.message}</div>`;
+}
+
+});
+
+document.getElementById("clientMessageModal").style.display="block";
+
+});
+
+}
+
+function sendReply(){
+
+const input=document.getElementById("clientReply");
+const reply=input.value.trim();
+
+if(!reply) return;
+
+fetch('/booking/reply',{
+method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({
+id:clientBookingId,
+reply:reply
+})
+})
+.then(res=>res.json())
+.then(data=>{
+
+if(data.success){
+
+input.value="";
+
+openClientMessage(clientBookingId);
+
+}
+
+})
+.catch(err=>{
+console.log("Client send error:",err);
+});
+
+}
+
+/* CLOSE CHAT MODAL */
+
+function closeClientMessage(){
+document.getElementById("clientMessageModal").style.display="none";
+}
+
+
+/* DRAG CHAT WINDOW */
+
+document.addEventListener("DOMContentLoaded", function(){
+
+const chatModal = document.getElementById("clientMessageModal");
+const dragArea = document.querySelector(".chat-header");
+
+let isDragging = false;
+let offsetX, offsetY;
+
+dragArea.addEventListener("mousedown",(e)=>{
+
+isDragging = true;
+
+offsetX = e.clientX - chatModal.offsetLeft;
+offsetY = e.clientY - chatModal.offsetTop;
+
+});
+
+document.addEventListener("mousemove",(e)=>{
+
+if(!isDragging) return;
+
+chatModal.style.left = (e.clientX - offsetX) + "px";
+chatModal.style.top = (e.clientY - offsetY) + "px";
+
+});
+
+document.addEventListener("mouseup",()=>{
+isDragging = false;
+});
+
+});
+
+
+setInterval(()=>{
+
+if(!clientBookingId) return;
+
+fetch('/booking/chat/'+clientBookingId)
+.then(res=>res.json())
+.then(data=>{
+
+const chat=document.getElementById("chatMessages");
+
+chat.innerHTML="";
+
+data.forEach(m=>{
+
+if(m.sender==="admin"){
+chat.innerHTML+=`<div class="admin-msg">${m.message}</div>`;
+}else{
+chat.innerHTML+=`<div class="client-msg">${m.message}</div>`;
+}
+
+});
+
+chat.scrollTop=chat.scrollHeight;
+
+});
+
+},2000);
+
+
+document.addEventListener("DOMContentLoaded",()=>{
+
+const input=document.getElementById("clientReply");
+
+input.addEventListener("keydown",(e)=>{
+
+if(e.key==="Enter" && !e.shiftKey){
+
+e.preventDefault();
+
+sendReply();
+
+input.value="";  
+
+}
+
+});
+
+});
+
+</script>
+
+
+<!-- ================= CANCEL MODAL ================= -->
+
+<div id="cancelModal" class="cancel-modal">
+
+<div class="cancel-box">
+
+<h3>Cancel Booking</h3>
+
+<p>Are you sure you want to cancel this booking?</p>
+
+<div class="cancel-actions">
+
+<button id="cancelNo" class="cancel-no">No</button>
+
+<button id="cancelYes" class="cancel-yes">Yes, Cancel</button>
+
+</div>
+
+</div>
+
+</div>
+
+<div id="toast" class="toast">Booking cancelled successfully</div>
+
+
+
+<div id="clientMessageModal" class="chat-modal">
+
+<div class="chat-box">
+
+<div class="chat-header" id="chatDrag">
+
+Admin Chat
+
+<button onclick="closeClientMessage()">✕</button>
+
+</div>
+
+<div class="chat-messages" id="chatMessages"></div>
+
+<div class="chat-input">
+
+<textarea id="clientReply" placeholder="Type your message..."></textarea>
+
+<button onclick="sendReply()">Send</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+</body>
+</html>
