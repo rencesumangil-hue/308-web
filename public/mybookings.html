@@ -53,7 +53,7 @@ container.innerHTML += `
 <p><strong>Date:</strong> ${datePH}</p>
 <p><strong>Time:</strong> ${b.booking_time}</p>
 
-${b.status === "Pending" ? 
+${(b.status || "Pending") === "Pending" ? 
 `<button class="cancel-btn" onclick="cancelBooking(${b.id})">✕</button>` 
 : ""}
 

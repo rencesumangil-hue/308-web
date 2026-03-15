@@ -116,10 +116,10 @@ message:"This time slot is already full."
 /* ============================= */
 
 db.query(
-`INSERT INTO bookings 
-(user_id,booking_date,booking_time,tattoo_reference,proof_of_payment,mobile_number,tattoo_area) 
-VALUES (?,?,?,?,?,?,?)`,
-[user_id,booking_date,booking_time,tattoo,proof,mobile_number,tattoo_area],
+`INSERT INTO bookings
+(user_id,booking_date,booking_time,tattoo_reference,proof_of_payment,mobile_number,tattoo_area,status)
+VALUES (?,?,?,?,?,?,?,?)`,
+[user_id,booking_date,booking_time,tattoo,proof,mobile_number,tattoo_area,"Pending"],
 (err)=>{
 
 if(err){
