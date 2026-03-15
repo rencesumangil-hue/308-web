@@ -29,7 +29,9 @@ let cancelId = null;
 
 /* ================= LOAD BOOKINGS ================= */
 
-fetch('/booking/my')
+fetch('/booking/my', {
+credentials: "include"
+})
 .then(res=>res.json())
 .then(data=>{
 

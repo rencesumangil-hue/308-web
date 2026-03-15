@@ -32,7 +32,11 @@ router.post('/login',(req,res)=>{
         const match = await bcrypt.compare(password,result[0].password);
         if(!match) return res.send("Wrong password");
 
-        req.session.user = result[0];
+        req.session.user = {
+        id: result[0].id,
+        email: result[0].email,
+        role: result[0].role
+        };
 
         if(result[0].role==='admin'){
             res.redirect('/admin/dashboard');
