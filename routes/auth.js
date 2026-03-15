@@ -19,7 +19,15 @@ router.post('/login',(req,res)=>{
     const {email,password} = req.body;
 
     db.query("SELECT * FROM users WHERE email=?",[email], async (err,result)=>{
-        if(result.length===0) return res.send("User not found");
+
+        if(err){
+            console.log(err);
+            return res.send("Database error");
+        }
+
+        if(!result || result.length === 0){
+            return res.send("User not found");
+        }
 
         const match = await bcrypt.compare(password,result[0].password);
         if(!match) return res.send("Wrong password");
