@@ -16,7 +16,10 @@ app.use(express.static('public'));
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
-  saveUninitialized: true
+  saveUninitialized: false,
+  cookie:{
+    secure:false
+  }
 }));
 
 app.use((req,res,next)=>{
@@ -27,7 +30,7 @@ app.use((req,res,next)=>{
 app.use('/auth', require('./routes/auth'));
 app.use('/booking', require('./routes/booking'));
 app.use('/admin', require('./routes/admin'));
-app.use('/schedule', require('./routes/schedule'));
+
 
 app.get('/create-admin', async (req,res)=>{
     const hashed = await bcrypt.hash('admin123',10);

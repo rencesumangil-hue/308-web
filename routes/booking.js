@@ -143,18 +143,17 @@ res.json({success:true});
 
 router.delete('/delete/:id',(req,res)=>{
 
-const id = req.params.id;
-
-db.query(
-"DELETE FROM bookings WHERE id=?",
-[id],
-(err)=>{
-
-if(err){
-console.log(err);
+if(!req.session.user){
 return res.json({success:false});
 }
 
+const id = req.params.id;
+
+db.query(
+"DELETE FROM bookings WHERE id=? AND user_id=?",
+[id,req.session.user.id],
+(err)=>{
+if(err) return res.json({success:false});
 res.json({success:true});
 
 });
