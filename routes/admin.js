@@ -16,18 +16,27 @@ res.sendFile(path.join(__dirname,'../public/admin.html'));
 
 /* ALL BOOKINGS */
 router.get('/bookings',(req,res)=>{
-    if(!req.session.user || req.session.user.role!=='admin'){
-        return res.json([]);
-    }
 
-    db.query(`
-        SELECT bookings.*, users.fullname
-        FROM bookings
-        JOIN users ON bookings.user_id = users.id
-        ORDER BY booking_date ASC
-    `,(err,result)=>{
-        res.json(result);
-    });
+if(!req.session.user || req.session.user.role!=='admin'){
+return res.json([]);
+}
+
+db.query(`
+SELECT bookings.*, users.fullname
+FROM bookings
+JOIN users ON bookings.user_id = users.id
+ORDER BY booking_date ASC
+`,(err,result)=>{
+
+if(err){
+console.log(err);
+return res.json([]);
+}
+
+res.json(result);
+
+});
+
 });
 
 /* CALENDAR (ACCEPTED ONLY) */

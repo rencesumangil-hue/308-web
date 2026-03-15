@@ -62,13 +62,8 @@ ${(b.status || "Pending") === "Pending" ?
 <p>
 
 ${b.status === "Denied" ? `
-<span class="msg-icon" onclick="openClientMessage(${b.id})">
-💬
-<span class="msg-count">${b.client_seen == 0 && b.admin_note ? 1 : ""}</span>
-</span>
 <span class="status denied">Denied</span>
-`
-:
+` :
 `<span class="status ${b.status.toLowerCase()}">${b.status}</span>`
 }
 
