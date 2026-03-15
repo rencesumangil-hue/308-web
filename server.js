@@ -14,13 +14,9 @@ app.use(express.urlencoded({extended:true}));
 app.use(express.static('public'));
 
 app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave:false,
-  saveUninitialized:false,
-  cookie:{
-    secure:true,
-    sameSite:"none"
-  }
+    secret: process.env.SESSION_SECRET,
+    resave:false,
+    saveUninitialized:false
 }));
 
 app.use((req,res,next)=>{
