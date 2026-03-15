@@ -38,8 +38,8 @@ router.post('/login',(req,res)=>{
     async (err,result)=>{
 
       if(err){
-        console.log("LOGIN DB ERROR:",err);
-        return res.send("Database error");
+      console.log("LOGIN DB ERROR:", err);
+      return res.status(500).send("Database error");
       }
 
       if(!result || result.length === 0){
