@@ -41,12 +41,18 @@ return res.json([]);
 }
 
 db.query(
-"SELECT * FROM bookings WHERE user_id=?",
+"SELECT * FROM bookings WHERE user_id=? ORDER BY booking_date DESC",
 [req.session.user.id],
 (err,result)=>{
-res.json(result);
+
+if(err){
+console.log(err);
+return res.json([]);
 }
-);
+
+res.json(result);
+
+});
 
 });
 
