@@ -551,179 +551,7 @@ opacity:1;
 transform:translateY(0);
 }
 
-/* CHAT MODAL */
 
-.chat-modal{
-display:none;
-position:fixed;
-bottom:20px;
-left:20px;
-width:360px;
-height:420px;
-background:#0f0f0f;
-border-radius:12px;
-box-shadow:0 10px 30px rgba(0,0,0,0.6);
-z-index:9999;
-overflow:hidden;
-}
-
-.chat-box{
-width:100%;
-height:100%;
-display:flex;
-flex-direction:column;
-}
-
-.chat-header{
-background:#111;
-color:white;
-padding:12px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-cursor:move;
-border-bottom:1px solid #222;
-}
-
-.chat-header button{
-background:#ff3b3b;
-border:none;
-color:white;
-padding:4px 10px;
-border-radius:6px;
-cursor:pointer;
-}
-
-.admin-msg{
-background:#ff3b3b;
-color:white;
-padding:8px 12px;
-border-radius:10px;
-align-self:flex-end;
-max-width:70%;
-}
-
-.client-msg{
-background:#1c1c1c;
-color:white;
-padding:8px 12px;
-border-radius:10px;
-align-self:flex-start;
-max-width:70%;
-}
-
-.chat-messages{
-display:flex;
-flex-direction:column;
-gap:8px;
-padding:10px;
-overflow-y:auto;
-flex:1;
-}
-
-.chat-input{
-display:flex;
-gap:8px;
-padding:10px;
-background:#111;
-border-top:1px solid #222;
-}
-
-.chat-input textarea{
-flex:1;
-height:38px;
-resize:none;
-background:#0f0f0f;
-border:1px solid #333;
-color:white;
-padding:6px;
-border-radius:6px;
-}
-
-.chat-input button{
-background:#ff3b3b;
-border:none;
-padding:6px 14px;
-color:white;
-border-radius:6px;
-cursor:pointer;
-}
-
-.chat-input textarea{
-flex:1;
-resize:none;
-height:40px;
-border-radius:8px;
-border:1px solid #333;
-background:#0f0f0f;
-color:white;
-padding:8px;
-}
-
-.chat-input button{
-background:#ff3b3b;
-border:none;
-color:white;
-padding:8px 16px;
-border-radius:8px;
-cursor:pointer;
-}
-
-.msg-icon{
-cursor:pointer;
-font-size:18px;
-position:relative;
-z-index:10;
-}
-
-.msg-icon:hover{
-transform:scale(1.15);
-}
-
-.msg-badge{
-position:absolute;
-top:-6px;
-right:-6px;
-background:#ff3b3b;
-color:white;
-font-size:10px;
-padding:2px 6px;
-border-radius:50%;
-}
-
-.msg-count{
-position:absolute;
-top:-6px;
-right:-6px;
-background:red;
-color:white;
-font-size:10px;
-padding:2px 5px;
-border-radius:50%;
-}
-
-.chat-header button{
-background:#ff3b3b;
-border:none;
-color:white;
-cursor:pointer;
-padding:5px 10px;
-border-radius:5px;
-}
-
-
-.status-cell{
-text-align:right;
-white-space:nowrap;
-}
-
-.status-cell .msg-icon{
-margin-right:8px;
-}
-
-.status-cell .status-badge{
-margin-right:8px;
-}
 
 .cancel-btn{
 background:#ff3b3b;
@@ -895,26 +723,7 @@ Admin
 </div>
 
 
-<!-- BOOKINGS -->
-<div id="bookingSection" style="display:none;">
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Number</th>
-<th>Date&Time</th>
-<th>Area</th>
-<th>Reference</th>
-<th>Payment</th>
-<th>Status</th>
-<th>Action</th>
-</tr>
-</thead>
-<tbody id="bookingTable"></tbody>
-</table>
-</div>
 
-</div>
 
 <script>
 
@@ -927,16 +736,6 @@ document.getElementById("calendarSection").style.display="block";
 
 }
 
-function showBookings(){
-
-document.getElementById("calendarSection").style.display="none";
-document.getElementById("bookingSection").style.display="block";
-
-document.getElementById("topMenu").classList.remove("show");
-
-loadBookings();
-
-}
 
 
 /* ================= CALENDAR ================= */
@@ -1064,6 +863,7 @@ pendingCount++;
 table.innerHTML+=`
 <tr>
 
+<td>${b.fullname}</td>
 <td>${b.mobile_number}</td>
 <td>
 ${new Date(b.booking_date).toLocaleDateString("en-PH")} 
@@ -1204,18 +1004,22 @@ table.innerHTML+=`
 <tr>
 <td>${b.fullname}</td>
 <td>${b.mobile_number}</td>
-<td>${b.booking_date}<br>${b.booking_time}</td>
+<td>
+${new Date(b.booking_date).toLocaleDateString("en-PH")} 
+<br>
+${b.booking_time}
+</td>
 <td>${b.tattoo_area}</td>
 
 <td>
-<img src="${b.tattoo_reference}" 
+<img src="/uploads/${b.tattoo_reference}" 
 class="image-preview"
 onerror="this.src='/images/no-image.png'"
 onclick="openModal(this.src)">
 </td>
 
 <td>
-<img src="${b.proof_of_payment}"
+<img src="/uploads/${b.proof_of_payment}"
 class="image-preview"
 onerror="this.src='/images/no-image.png'"
 onclick="openModal(this.src)">
@@ -1253,18 +1057,22 @@ table.innerHTML+=`
 <tr>
 <td>${b.fullname}</td>
 <td>${b.mobile_number}</td>
-<td>${b.booking_date}<br>${b.booking_time}</td>
+<td>
+${new Date(b.booking_date).toLocaleDateString("en-PH")} 
+<br>
+${b.booking_time}
+</td>
 <td>${b.tattoo_area}</td>
 
 <td>
-<img src="${b.tattoo_reference}" 
+<img src="/uploads/${b.tattoo_reference}" 
 class="image-preview"
 onerror="this.src='/images/no-image.png'"
 onclick="openModal(this.src)">
 </td>
 
 <td>
-<img src="${b.proof_of_payment}"
+<img src="/uploads/${b.proof_of_payment}"
 class="image-preview"
 onerror="this.src='/images/no-image.png'"
 onclick="openModal(this.src)">
@@ -1307,18 +1115,22 @@ table.innerHTML+=`
 <tr>
 <td>${b.fullname}</td>
 <td>${b.mobile_number}</td>
-<td>${b.booking_date}<br>${b.booking_time}</td>
+<td>
+${new Date(b.booking_date).toLocaleDateString("en-PH")} 
+<br>
+${b.booking_time}
+</td>
 <td>${b.tattoo_area}</td>
 
 <td>
-<img src="${b.tattoo_reference}" 
+<img src="/uploads/${b.tattoo_reference}" 
 class="image-preview"
 onerror="this.src='/images/no-image.png'"
 onclick="openModal(this.src)">
 </td>
 
 <td>
-<img src="${b.proof_of_payment}"
+<img src="/uploads/${b.proof_of_payment}"
 class="image-preview"
 onerror="this.src='/images/no-image.png'"
 onclick="openModal(this.src)">
@@ -1326,7 +1138,7 @@ onclick="openModal(this.src)">
 
 <td class="status-cell">
 
-<span class="msg-icon" onclick="openAdminChat(${b.id})">💬</span>
+
 
 <span class="status-badge denied">Denied</span>
 
@@ -1385,169 +1197,7 @@ loadAccepted();
 },3000);
 
 
-let currentBookingId = null;
 
-function openAdminNote(id){
-
-currentBookingId = id;
-
-document.getElementById("adminNoteModal").style.display="flex";
-
-}
-
-function closeAdminNote(){
-
-document.getElementById("adminNoteModal").style.display="none";
-
-}
-
-function saveAdminNote(){
-
-const note = document.getElementById("adminNoteText").value;
-
-fetch('/admin/add-note',{
-method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({id:currentBookingId,note})
-})
-.then(res=>res.json())
-.then(data=>{
-if(data.success){
-
-closeAdminNote();
-loadDeniedBookings();
-
-}
-});
-
-}
-
-
-
-let adminBookingId = null;
-
-function openAdminChat(id){
-
-adminBookingId = id;
-
-fetch('/booking/chat/'+id)
-.then(res=>res.json())
-.then(data=>{
-
-const chat=document.getElementById("adminChatMessages");
-
-chat.innerHTML="";
-
-data.forEach(m=>{
-
-if(m.sender==="admin"){
-chat.innerHTML+=`<div class="admin-msg">${m.message}</div>`;
-}else{
-chat.innerHTML+=`<div class="client-msg">${m.message}</div>`;
-}
-
-});
-
-document.getElementById("adminChatModal").style.display="block";
-
-});
-
-}
-
-function sendAdminReply(){
-
-const input = document.getElementById("adminReply");
-const reply = input.value.trim();
-
-if(!reply) return;
-
-fetch('/booking/admin-reply',{
-method:'POST',
-headers:{
-'Content-Type':'application/json'
-},
-body:JSON.stringify({
-id:adminBookingId,
-reply:reply
-})
-})
-.then(res=>res.json())
-.then(data=>{
-
-if(data.success){
-
-input.value=""; 
-
-openAdminChat(adminBookingId); 
-
-}
-
-})
-.catch(err=>{
-console.log("Send error:",err);
-});
-
-}
-
-function closeAdminChat(){
-document.getElementById("adminChatModal").style.display="none";
-}
-
-
-document.addEventListener("DOMContentLoaded", function(){
-
-const chatModal = document.getElementById("adminChatModal");
-const dragArea = document.querySelector(".chat-header");
-
-let isDragging=false;
-let offsetX,offsetY;
-
-dragArea.addEventListener("mousedown",(e)=>{
-
-isDragging=true;
-
-offsetX = e.clientX - chatModal.offsetLeft;
-offsetY = e.clientY - chatModal.offsetTop;
-
-});
-
-document.addEventListener("mousemove",(e)=>{
-
-if(!isDragging) return;
-
-chatModal.style.left = (e.clientX-offsetX)+"px";
-chatModal.style.top = (e.clientY-offsetY)+"px";
-
-});
-
-document.addEventListener("mouseup",()=>{
-isDragging=false;
-});
-
-});
-
-
-
-
-document.addEventListener("DOMContentLoaded",()=>{
-
-const input=document.getElementById("adminReply");
-
-input.addEventListener("keydown",(e)=>{
-
-if(e.key==="Enter" && !e.shiftKey){
-
-e.preventDefault();
-
-sendAdminReply();
-
-input.value=""; 
-
-}
-
-});
-
-});
 
 
 let deleteDeniedId = null;
@@ -1599,38 +1249,9 @@ liveUpdate();
 
 </div>
 
-<div id="adminNoteModal" class="image-modal">
-
-<div class="note-box">
-
-<h3>Booking Note</h3>
-
-<textarea id="adminNoteText" placeholder="Write reason why booking was denied..."></textarea>
-
-<button onclick="saveAdminNote()">Send</button>
-<button onclick="closeAdminNote()">Close</button>
-
-</div>
-
-</div>
 
 
-<div id="adminChatModal" class="chat-modal">
-  <div class="chat-box">
-    <div class="chat-header">
-      Chat
-      <button onclick="closeAdminChat()">✕</button>
-    </div>
 
-    <div id="adminChatMessages" class="chat-messages"></div>
-
-    <div class="chat-input">
-      <textarea id="adminReply"></textarea>
-      <button onclick="sendAdminReply()">Send</button>
-    </div>
-
-  </div>
-</div>
 
 
 <div id="deleteDeniedModal" class="cancel-modal">

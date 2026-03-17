@@ -171,79 +171,8 @@ res.json({success:true});
 
 });
 
-/* ============================= */
-/* CHAT SYSTEM */
-/* ============================= */
 
-/* GET CHAT */
 
-router.get('/chat/:id',(req,res)=>{
-
-const bookingId = req.params.id;
-
-db.query(
-"SELECT * FROM chat_messages WHERE booking_id=? ORDER BY created_at ASC",
-[bookingId],
-(err,rows)=>{
-
-if(err){
-console.log(err);
-return res.status(500).json({error:"Server error"});
-}
-
-res.json(rows);
-
-});
-
-});
-
-/* CLIENT MESSAGE */
-
-router.post('/reply',(req,res)=>{
-
-const {id,reply} = req.body;
-
-db.query(
-"INSERT INTO chat_messages (booking_id,sender,message) VALUES (?,?,?)",
-[id,"client",reply],
-(err)=>{
-
-if(err){
-console.log("CLIENT CHAT ERROR:",err);
-return res.json({success:false});
-}
-
-res.json({success:true});
-
-});
-
-});
-
-/* ADMIN MESSAGE */
-
-router.post('/admin-reply',(req,res)=>{
-
-const {id,reply} = req.body;
-
-db.query(
-"INSERT INTO chat_messages (booking_id,sender,message) VALUES (?,?,?)",
-[id,"admin",reply],
-(err)=>{
-
-if(err){
-console.log("ADMIN CHAT ERROR:",err);
-return res.json({success:false});
-}
-
-res.json({success:true});
-
-});
-
-});
-
-/* ============================= */
-/* CALENDAR API */
-/* ============================= */
 
 /* TOTAL BOOKINGS PER DATE */
 
