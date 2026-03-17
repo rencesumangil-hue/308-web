@@ -892,3 +892,66 @@ color:white;
 border-radius:5px;
 cursor:pointer;
 }
+
+/* ================= MOBILE CLIENT ================= */
+
+@media screen and (max-width: 768px){
+
+/* NAV */
+nav{
+flex-direction:column;
+padding:10px;
+}
+
+.nav-center{
+display:flex;
+flex-wrap:wrap;
+justify-content:center;
+gap:10px;
+}
+
+.nav-center a{
+font-size:14px;
+}
+
+/* HERO */
+#home h1{
+font-size:28px;
+text-align:center;
+}
+
+#home p{
+font-size:14px;
+text-align:center;
+}
+
+/* PORTFOLIO */
+.portfolio-grid{
+grid-template-columns:1fr;
+gap:15px;
+}
+
+/* CALENDAR */
+.calendar-grid{
+grid-template-columns:repeat(3,1fr);
+gap:8px;
+}
+
+.calendar-day{
+padding:12px 0;
+font-size:14px;
+}
+
+/* MODAL */
+.date-box{
+width:90%;
+padding:20px;
+}
+
+/* BUTTON */
+.btn{
+width:100%;
+text-align:center;
+}
+
+}
