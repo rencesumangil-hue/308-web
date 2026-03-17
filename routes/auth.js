@@ -41,7 +41,9 @@ router.post('/register', async (req,res)=>{
 });
 
 /* LOGIN */
-router.post('/login',(req,res)=>{
+router.post('/login', async (req,res)=>{
+
+try{
 
 const {email,password} = req.body;
 
@@ -50,7 +52,6 @@ db.query(
 [email],
 async (err,result)=>{
 
-// ✅ FIX 1: HANDLE DB ERROR
 if(err){
 console.log("DB ERROR:", err);
 return res.json({
@@ -59,7 +60,6 @@ message:"Server error"
 });
 }
 
-// ✅ FIX 2: USER NOT FOUND
 if(!result || result.length === 0){
 return res.json({
 success:false,
@@ -69,8 +69,16 @@ message:"User not found"
 
 const user = result[0];
 
-// ✅ FIX 3: PASSWORD CHECK
+// ✅ SAFETY CHECK
+if(!user.password){
+return res.json({
+success:false,
+message:"Invalid account"
+});
+}
+
 let match = false;
+
 try{
 match = await bcrypt.compare(password,user.password);
 }catch(e){
@@ -88,7 +96,6 @@ message:"Wrong password"
 });
 }
 
-// ✅ SUCCESS
 req.session.user = {
 id:user.id,
 email:user.email,
@@ -108,6 +115,15 @@ redirect:"/"
 }
 
 });
+
+}catch(e){
+console.log("LOGIN CRASH:", e);
+return res.json({
+success:false,
+message:"Server error"
+});
+}
+
 });
 
 /* CHECK LOGIN STATUS */
