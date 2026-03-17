@@ -16,14 +16,24 @@ router.post('/register', async (req,res)=>{
     (err)=>{
 
       if(err){
-        console.log(err);
-        return res.json({
-        success:false,
-        message:"Email already exists"
+
+        if(err.code === 'ER_DUP_ENTRY'){
+          return res.json({
+          success:false,
+          message:"Email already exists"
         });
       }
 
-      res.redirect('/login.html');
+      console.log(err);
+      return res.json({
+        success:false,
+        message:"Database error"
+      });
+    }
+
+      return res.json({
+      success:true
+      });
 
     }
   );
@@ -33,48 +43,71 @@ router.post('/register', async (req,res)=>{
 /* LOGIN */
 router.post('/login',(req,res)=>{
 
-  const {email,password} = req.body;
+const {email,password} = req.body;
 
-  db.query(
-    "SELECT * FROM users WHERE email=?",
-    [email],
-    async (err,result)=>{
+db.query(
+"SELECT * FROM users WHERE email=?",
+[email],
+async (err,result)=>{
 
-      if(err){
-      console.log("LOGIN DB ERROR:", err);
-      return res.json({
-        success:false,
-        message:"Server error"
-      });
-      }
+// ✅ FIX 1: HANDLE DB ERROR
+if(err){
+console.log("DB ERROR:", err);
+return res.json({
+success:false,
+message:"Server error"
+});
+}
 
-      if(!result || result.length === 0){
-        return res.json({success:false, message:"User not found"});
-      }
+// ✅ FIX 2: USER NOT FOUND
+if(!result || result.length === 0){
+return res.json({
+success:false,
+message:"User not found"
+});
+}
 
-      const user = result[0];
+const user = result[0];
 
-      const match = await bcrypt.compare(password,user.password);
+// ✅ FIX 3: PASSWORD CHECK
+let match = false;
+try{
+match = await bcrypt.compare(password,user.password);
+}catch(e){
+console.log("BCRYPT ERROR:", e);
+return res.json({
+success:false,
+message:"Server error"
+});
+}
 
-      if(!match){
-        return res.json({success:false, message:"Wrong password"});
-      }
+if(!match){
+return res.json({
+success:false,
+message:"Wrong password"
+});
+}
 
-      req.session.user = {
-        id:user.id,
-        email:user.email,
-        role:user.role
-      };
+// ✅ SUCCESS
+req.session.user = {
+id:user.id,
+email:user.email,
+role:user.role
+};
 
-      if(user.role === "admin"){
-        return res.json({success:true, redirect:"/admin/dashboard"});
-      }else{
-        return res.json({success:true, redirect:"/"});
-      }
+if(user.role === "admin"){
+return res.json({
+success:true,
+redirect:"/admin/dashboard"
+});
+}else{
+return res.json({
+success:true,
+redirect:"/"
+});
+}
 
-    }
-  );
-
+});
 });
 
 /* CHECK LOGIN STATUS */

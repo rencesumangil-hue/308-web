@@ -50,10 +50,15 @@ fetch('/auth/login',{
 method:'POST',
 body:formData
 })
-.then(res=>res.json())
+.then(res=>res.json().catch(()=>null)) // 👈 FIX
 .then(data=>{
 
 console.log(data);
+
+if(!data){
+showToast("Server error");
+return;
+}
 
 if(!data.success){
 showToast(data.message);
@@ -63,7 +68,7 @@ window.location.href = data.redirect;
 
 })
 .catch(err=>{
-console.log("FETCH ERROR:", err);
+console.log(err);
 showToast("Something went wrong");
 });
 
