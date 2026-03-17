@@ -43,7 +43,7 @@ router.post('/login',(req,res)=>{
       }
 
       if(!result || result.length === 0){
-        return res.send("User not found");
+        return res.json({success:false, message:"User not found"});
       }
 
       const user = result[0];
@@ -51,7 +51,7 @@ router.post('/login',(req,res)=>{
       const match = await bcrypt.compare(password,user.password);
 
       if(!match){
-        return res.send("Wrong password");
+        return res.json({success:false, message:"Wrong password"});
       }
 
       req.session.user = {
@@ -61,9 +61,9 @@ router.post('/login',(req,res)=>{
       };
 
       if(user.role === "admin"){
-        res.redirect('/admin/dashboard');
+        return res.json({success:true, redirect:"/admin/dashboard"});
       }else{
-        res.redirect('/');
+        return res.json({success:true, redirect:"/"});
       }
 
     }
