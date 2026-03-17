@@ -634,6 +634,10 @@ opacity:1;
 transform:translateX(-50%) translateY(0);
 }
 
+.toast.success{
+border-left:4px solid #ff3c3c;
+}
+
 /* Inputs */
 
 .form-container input,
