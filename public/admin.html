@@ -550,9 +550,7 @@ display:block;
 opacity:1;
 transform:translateY(0);
 }
-
-
-
+ 
 .cancel-btn{
 background:#ff3b3b;
 border:none;
@@ -567,6 +565,9 @@ align-items:center;
 justify-content:center;
 }
 
+.calendar-day.today{
+border:2px solid white;
+}
 
 </style>
 </head>
@@ -592,6 +593,14 @@ Admin
 <div class="main">
 
 <div class="stats-container">
+
+<div class="stat-card" onclick="showFinished()">
+<div class="stat-icon total-icon">✔</div>
+<div>
+<div class="stat-title">Finished</div>
+<div class="stat-number" id="finishedStat">0</div>
+</div>
+</div>
 
 <div class="stat-card stat-pending" onclick="showPending()">
 <div class="stat-icon pending-icon">☰</div>
@@ -695,6 +704,26 @@ Admin
 
 </div>
 
+<div id="finishedPanel" style="display:none;">
+
+<h2>Finished Sessions</h2>
+
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Number</th>
+<th>Date&Time</th>
+<th>Area</th>
+<th>Status</th>
+</tr>
+</thead>
+
+<tbody id="finishedTable"></tbody>
+</table>
+
+</div>
+
 <!-- CALENDAR -->
 <div id="calendarSection">
 
@@ -752,7 +781,7 @@ fetch('/admin/calendar')
 bookingCounts = {};
 
 data.forEach(d=>{
-const date = new Date(d.booking_date).toISOString().split('T')[0];
+const date = d.booking_date.split('T')[0];
 bookingCounts[date] = d.total;
 });
 
@@ -778,6 +807,7 @@ currentDate.toLocaleString("en-PH",{month:"long"}) + " " + year;
 const firstDay = new Date(year,month,1).getDay();
 const daysInMonth = new Date(year,month+1,0).getDate();
 
+/* blank */
 for(let i=0;i<firstDay;i++){
 calendar.innerHTML+="<div></div>";
 }
@@ -786,25 +816,38 @@ for(let day=1;day<=daysInMonth;day++){
 
 let className="calendar-day";
 
-const formattedDate = 
+const formattedDate =
 year + "-" +
 String(month + 1).padStart(2,'0') + "-" +
 String(day).padStart(2,'0');
 
+const today = new Date().toISOString().split('T')[0];
+
+if(formattedDate === today){
+className += " today";
+}
+
 const total = bookingCounts[formattedDate] || 0;
 
-if(total >= 1 && total <= 2){
+/* COLORS */
+if(total >=1 && total <=2){
 className += " green";
 }
-else if(total >= 3 && total <= 4){
+else if(total >=3 && total <=4){
 className += " yellow";
 }
-else if(total == 5){
+else if(total >=5){
 className += " red";
 }
 
+/* LOCK */
+let lockIcon = "";
+if(total >=6){
+lockIcon = " 🔒";
+}
+
 calendar.innerHTML+=`
-<div class="${className}">${day}</div>
+<div class="${className}">${day}${lockIcon}</div>
 `;
 }
 }
@@ -952,6 +995,7 @@ function hidePanels(){
 document.getElementById("pendingPanel").style.display="none";
 document.getElementById("acceptedPanel").style.display="none";
 document.getElementById("deniedPanel").style.display="none";
+document.getElementById("finishedPanel").style.display="none";
 
 document.getElementById("calendarSection").style.display="none";
 
@@ -1027,6 +1071,11 @@ onclick="openModal(this.src)">
 
 <td>
 <span class="status-badge accepted">Accepted</span>
+
+<button onclick="finishBooking(${b.id})" 
+style="background:#3b82f6;color:white;padding:5px 10px;border-radius:6px;margin-left:5px;">
+✔
+</button>
 </td>
 
 </tr>
@@ -1235,6 +1284,77 @@ liveUpdate();
 }
 
 });
+
+}
+
+function finishBooking(id){
+
+if(!confirm("Mark this tattoo session as FINISHED?")) return;
+
+fetch('/admin/update',{
+method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({
+id:id,
+status:'Finished'
+})
+})
+.then(res=>res.json())
+.then(data=>{
+if(data.success){
+
+loadAcceptedBookings();
+liveUpdate();
+
+}
+
+});
+
+}
+
+
+function loadFinishedBookings(){
+
+fetch('/admin/bookings')
+.then(res=>res.json())
+.then(data=>{
+
+const table=document.getElementById("finishedTable");
+table.innerHTML="";
+
+data.forEach(b=>{
+
+if(b.status === "Finished"){
+
+table.innerHTML+=`
+<tr>
+<td>${b.fullname}</td>
+<td>${b.mobile_number}</td>
+<td>
+${new Date(b.booking_date).toLocaleDateString("en-PH")} 
+<br>
+${b.booking_time}
+</td>
+<td>${b.tattoo_area}</td>
+<td><span class="status-badge accepted">Finished</span></td>
+</tr>
+`;
+
+}
+
+});
+
+});
+
+}
+
+function showFinished(){
+
+hidePanels();
+
+document.getElementById("finishedPanel").style.display="block";
+
+loadFinishedBookings();
 
 }
 

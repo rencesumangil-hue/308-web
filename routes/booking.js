@@ -143,9 +143,9 @@ res.json({success:true});
 
 });
 
-/* ============================= */
+
 /* DELETE BOOKING */
-/* ============================= */
+
 
 router.delete('/delete/:id',(req,res)=>{
 
@@ -156,8 +156,8 @@ return res.json({success:false});
 const id = req.params.id;
 
 db.query(
-"DELETE FROM bookings WHERE id=? AND user_id=?",
-[id,req.session.user.id],
+"DELETE FROM bookings WHERE id=?",
+[id],
 (err)=>{
 
 if(err){
