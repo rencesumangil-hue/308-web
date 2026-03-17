@@ -24,12 +24,7 @@
 <input type="email" name="email" placeholder="Email" required>
 <input type="password" id="password" name="password" placeholder="Password" required>
 
-<script>
-function togglePass(){
-    const pass = document.getElementById("password");
-    pass.type = pass.type === "password" ? "text" : "password";
-}
-</script>
+
 <div class="login-row">
     <label class="show-pass">
         <input type="checkbox" onclick="togglePass()">
@@ -44,10 +39,6 @@ function togglePass(){
 </div>
 
 <script>
-document.getElementById("showPass").addEventListener("change", function() {
-    const pass = document.getElementById("password");
-    pass.type = this.checked ? "text" : "password";
-});
 
 document.getElementById("loginForm").addEventListener("submit",function(e){
 
@@ -62,19 +53,29 @@ body:formData
 .then(res=>res.json())
 .then(data=>{
 
+console.log(data);
+
 if(!data.success){
-
 showToast(data.message);
-
 }else{
-
 window.location.href = data.redirect;
-
 }
 
+})
+.catch(err=>{
+console.log("FETCH ERROR:", err);
+showToast("Something went wrong");
 });
 
-});
+}); 
+
+
+
+function togglePass(){
+const pass = document.getElementById("password");
+pass.type = pass.type === "password" ? "text" : "password";
+}
+
 
 
 function showToast(message){

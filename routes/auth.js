@@ -17,7 +17,10 @@ router.post('/register', async (req,res)=>{
 
       if(err){
         console.log(err);
-        return res.send("Email already exists");
+        return res.json({
+        success:false,
+        message:"Email already exists"
+        });
       }
 
       res.redirect('/login.html');
@@ -39,7 +42,10 @@ router.post('/login',(req,res)=>{
 
       if(err){
       console.log("LOGIN DB ERROR:", err);
-      return res.status(500).send("Database error");
+      return res.json({
+        success:false,
+        message:"Server error"
+      });
       }
 
       if(!result || result.length === 0){
