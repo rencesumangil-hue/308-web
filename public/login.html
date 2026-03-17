@@ -45,14 +45,6 @@ function togglePass(){
 
 <script>
 
-document.getElementById("showPass").addEventListener("change", function() {
-    const pass = document.getElementById("password");
-    pass.type = this.checked ? "text" : "password";
-});
-
-
-
-
 function togglePass(){
     const pass = document.getElementById("password");
     pass.type = pass.type === "password" ? "text" : "password";
