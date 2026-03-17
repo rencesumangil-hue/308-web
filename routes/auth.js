@@ -4,151 +4,92 @@ const bcrypt = require('bcryptjs');
 const db = require('../config/db');
 
 /* REGISTER */
+
+
 router.post('/register', async (req,res)=>{
 
-try{
+  
+  const {fullname,email,password} = req.body;
 
-const {fullname,email,password} = req.body;
+  const hashed = await bcrypt.hash(password,10);
 
-if(!fullname || !email || !password){
-return res.json({
-success:false,
-message:"All fields required"
-});
-}
+  db.query(
+    "INSERT INTO users (fullname,email,password) VALUES (?,?,?)",
+    [fullname,email,hashed],
+    (err)=>{
 
-const hashed = await bcrypt.hash(password,10);
+      if(err){
+        console.log(err);
+        return res.send("Email already exists");
+      }
 
-db.query(
-"INSERT INTO users (fullname,email,password) VALUES (?,?,?)",
-[fullname,email,hashed],
-(err)=>{
+      res.redirect('/login.html');
 
-if(err){
-
-if(err.code === 'ER_DUP_ENTRY'){
-return res.json({
-success:false,
-message:"Email already exists"
-});
-}
-
-console.log("REGISTER DB ERROR:", err);
-return res.json({
-success:false,
-message:"Database error"
-});
-}
-
-return res.json({
-success:true
-});
-
-}
-);
-
-}catch(e){
-console.log("REGISTER CRASH:", e);
-return res.json({
-success:false,
-message:"Server error"
-});
-}
+    }
+  );
 
 });
-
 
 /* LOGIN */
 router.post('/login',(req,res)=>{
 
-const {email,password} = req.body;
+  const {email,password} = req.body;
 
-db.query(
-"SELECT * FROM users WHERE email=?",
-[email],
-async (err,result)=>{
+  db.query(
+    "SELECT * FROM users WHERE email=?",
+    [email],
+    async (err,result)=>{
 
-if(err){
-console.log("DB ERROR:", err);
-return res.json({
-success:false,
-message:"Server error"
-});
-}
+      if(err){
+      console.log("LOGIN DB ERROR:", err);
+      return res.status(500).send("Database error");
+      }
 
-if(!result || result.length === 0){
-return res.json({
-success:false,
-message:"User not found"
-});
-}
+      if(!result || result.length === 0){
+        return res.send("User not found");
+      }
 
-const user = result[0];
+      const user = result[0];
 
-if(!user.password){
-return res.json({
-success:false,
-message:"Invalid account"
-});
-}
+      const match = await bcrypt.compare(password,user.password);
 
-let match = false;
+      if(!match){
+        return res.send("Wrong password");
+      }
 
-try{
-match = await bcrypt.compare(password, user.password);
-}catch(e){
-console.log("BCRYPT ERROR:", e);
-return res.json({
-success:false,
-message:"Server error"
-});
-}
+      req.session.user = {
+        id:user.id,
+        email:user.email,
+        role:user.role
+      };
 
-if(!match){
-return res.json({
-success:false,
-message:"Wrong password"
-});
-}
+      if(user.role === "admin"){
+        res.redirect('/admin/dashboard');
+      }else{
+        res.redirect('/');
+      }
 
-/* ✅ SUCCESS LOGIN */
-req.session.user = {
-id:user.id,
-email:user.email,
-role:user.role
-};
+    }
+  );
 
-if(user.role === "admin"){
-return res.json({
-success:true,
-redirect:"/admin/dashboard"
-});
-}else{
-return res.json({
-success:true,
-redirect:"/"
-});
-}
-
-});
 });
 
 
 /* CHECK LOGIN STATUS */
 router.get('/status',(req,res)=>{
-if(req.session.user){
-res.json({loggedIn:true});
-}else{
-res.json({loggedIn:false});
-}
+  if(req.session.user){
+    res.json({loggedIn:true});
+  }else{
+    res.json({loggedIn:false});
+  }
 });
 
 
 /* LOGOUT */
 router.get('/logout',(req,res)=>{
-req.session.destroy(()=>{
-res.redirect('/');
-});
+  req.session.destroy(()=>{
+    res.redirect('/');
+  });
 });
 
 
