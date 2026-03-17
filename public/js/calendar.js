@@ -1,4 +1,7 @@
 let currentDate = new Date();
+let allBookings = {};
+
+/* ================= RENDER CALENDAR ================= */
 
 function renderCalendar(){
 
@@ -33,56 +36,59 @@ const box = document.createElement("div");
 box.className="calendar-day";
 box.innerText=day;
 
+/* TODAY + PAST LOGIC */
+const today = new Date().toISOString().split('T')[0];
+
+/* disable past */
+if(formattedDate < today){
+box.style.opacity="0.3";
+box.style.pointerEvents="none";
+}
+
+/* highlight today */
+if(formattedDate === today){
+box.style.border="2px solid white";
+}
+
 /* IMPORTANT */
 box.style.position="relative";
 
+/* GET BOOKINGS */
+const bookings = allBookings[formattedDate] || [];
+const total = bookings.length;
+
+/* APPLY STYLES (LOCK, COLORS, CLICK) */
+applyBookingStyles(formattedDate, box, bookings, total);
+
 calendar.appendChild(box);
 
-/* load bookings from database */
-loadBookingInfo(formattedDate,box);
-
 }
 
 }
 
-/* LOAD BOOKINGS */
+/* ================= APPLY BOOKING STYLE ================= */
 
-async function loadBookingInfo(date, element){
-
-try{
-
-const res = await fetch(`/booking/date-info/${date}`);
-const data = await res.json();
-
-const total = data.length;
-
-/* MAKE POSITION RELATIVE FOR LOCK */
-element.style.position="relative";
+function applyBookingStyles(date, element, data, total){
 
 /* COLOR SYSTEM */
-
 if(total >=1 && total <=2){
 element.style.background="#16a34a";
 }
-
 else if(total >=3 && total <=4){
 element.style.background="#facc15";
 }
-
 else if(total >=5){
 element.style.background="#dc2626";
 }
 
 /* FULL DAY LOCK */
-
 if(total >=6){
 
 element.style.background="#7f1d1d";
 element.style.cursor="not-allowed";
 element.style.opacity="0.85";
 
-/* ADD LOCK ICON */
-
+/* LOCK ICON */
 const lock = document.createElement("span");
 lock.innerText="🔒";
 
@@ -93,25 +99,17 @@ lock.style.fontSize="14px";
 
 element.appendChild(lock);
 
-/* STOP CLICK EVENT */
-
 return;
-
 }
 
 /* CLICK EVENT */
-
 element.onclick=()=>{
 showBookingModal(date,total,data);
 };
 
-}catch(err){
-console.log(err);
 }
 
-}
-
-/* MODAL */
+/* ================= MODAL ================= */
 
 function showBookingModal(date,total,data){
 
@@ -153,8 +151,6 @@ text-align:center;
 color:white;
 min-width:320px;
 transform:scale(1.15);
-
-/* WHITE GLOW */
 box-shadow:0 0 20px rgba(255,255,255,0.25);
 ">
 
@@ -184,7 +180,36 @@ document.body.appendChild(modal);
 
 }
 
-/* NAVIGATION */
+/* ================= PRELOAD BOOKINGS ================= */
+
+async function preloadBookings(){
+
+try{
+
+const res = await fetch('/booking/all');
+const data = await res.json();
+
+allBookings = {};
+
+data.forEach(b=>{
+const date = b.booking_date.split('T')[0];
+
+if(!allBookings[date]){
+allBookings[date]=[];
+}
+
+allBookings[date].push(b);
+});
+
+renderCalendar();
+
+}catch(err){
+console.log(err);
+}
+
+}
+
+/* ================= NAVIGATION ================= */
 
 function nextMonth(){
 currentDate.setMonth(currentDate.getMonth()+1);
@@ -196,8 +221,11 @@ currentDate.setMonth(currentDate.getMonth()-1);
 renderCalendar();
 }
 
-/* INITIAL LOAD */
+/* ================= INIT ================= */
 
+preloadBookings();
+
+/* REALTIME UPDATE */
 setInterval(()=>{
-renderCalendar();
-},5000);
+preloadBookings();
+},3000);

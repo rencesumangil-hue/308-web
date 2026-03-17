@@ -293,5 +293,23 @@ res.json(result);
 });
 
 
+router.get('/all',(req,res)=>{
+
+db.query(
+"SELECT * FROM bookings WHERE status='Accepted'",
+(err,result)=>{
+
+if(err){
+console.log(err);
+return res.json([]);
+}
+
+res.json(result);
+
+});
+
+});
+
+
 
 module.exports = router;

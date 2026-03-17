@@ -21,7 +21,7 @@
 <div class="form-container">
 <h2>Book Appointment</h2>
 <form id="bookingForm" enctype="multipart/form-data">
-<input type="date" name="booking_date" required>
+<input type="date" name="booking_date" id="bookingDate">
 <label>Time:</label>
 <select name="booking_time" required>
 <option value="">Select Time</option>
@@ -149,6 +149,10 @@ document.getElementById("fullModal").style.display = "flex";
 function closeFullModal(){
 document.getElementById("fullModal").style.display = "none";
 }
+
+const today = new Date().toISOString().split('T')[0];
+document.getElementById("bookingDate").setAttribute("min", today);
+
 
 </script>
 
