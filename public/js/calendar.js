@@ -192,7 +192,7 @@ const data = await res.json();
 allBookings = {};
 
 data.forEach(b=>{
-const date = b.booking_date.split('T')[0];
+const date = b.booking_date;
 
 if(!allBookings[date]){
 allBookings[date]=[];

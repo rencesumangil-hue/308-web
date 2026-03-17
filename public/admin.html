@@ -781,7 +781,7 @@ fetch('/admin/calendar')
 bookingCounts = {};
 
 data.forEach(d=>{
-const date = d.booking_date.split('T')[0];
+const date = d.booking_date;
 bookingCounts[date] = d.total;
 });
 

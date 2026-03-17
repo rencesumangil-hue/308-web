@@ -43,10 +43,10 @@ res.json(result);
 router.get('/calendar',(req,res)=>{
 
 db.query(`
-SELECT DATE(booking_date) as booking_date, COUNT(*) as total
+SELECT booking_date, COUNT(*) as total
 FROM bookings
 WHERE status='Accepted'
-GROUP BY DATE(booking_date)
+GROUP BY booking_date
 `,(err,result)=>{
 
 if(err){
@@ -54,9 +54,9 @@ console.log(err);
 return res.json([]);
 }
 
-/* FORCE STRING FORMAT (ANTI TIMEZONE BUG) */
+
 const fixed = result.map(r=>({
-booking_date: r.booking_date.toISOString().split('T')[0],
+booking_date: r.booking_date.toLocaleDateString('en-CA'),
 total: r.total
 }));
 
@@ -65,6 +65,7 @@ res.json(fixed);
 });
 
 });
+
 /* UPDATE STATUS */
 router.post('/update',(req,res)=>{
     const {id,status} = req.body;
