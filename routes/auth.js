@@ -11,7 +11,7 @@ router.post('/register', async (req,res)=>{
 
   const {fullname,email,password} = req.body;
 
-  const hashed = await bcrypt.hash(password,10);
+  const hashed = password;
 
   db.query(
     "INSERT INTO users (fullname,email,password) VALUES (?,?,?)",
@@ -38,7 +38,7 @@ const {email,password} = req.body;
 db.query(
 "SELECT * FROM users WHERE email=?",
 [email],
-async (err,result)=>{
+(err,result)=>{
 
 if(err){
 console.log("LOGIN DB ERROR:", err);
@@ -57,7 +57,8 @@ message:"User not found"
 
 const user = result[0];
 
-const match = await bcrypt.compare(password,user.password);
+// 🔥 SIMPLE CHECK LANG
+const match = (password === user.password);
 
 if(!match){
 return res.json({
