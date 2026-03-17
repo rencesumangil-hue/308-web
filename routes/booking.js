@@ -277,7 +277,7 @@ db.query(
 `SELECT booking_time 
 FROM bookings 
 WHERE booking_date=? 
-AND status!='Denied'`,
+AND status='Accepted'`,
 [date],
 (err,result)=>{
 
@@ -292,6 +292,6 @@ res.json(result);
 
 });
 
-/* ============================= */
+
 
 module.exports = router;

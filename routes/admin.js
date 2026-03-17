@@ -45,7 +45,7 @@ router.get('/calendar',(req,res)=>{
 db.query(
 `SELECT booking_date, COUNT(*) as total
  FROM bookings
- WHERE status != 'Denied'
+ WHERE status = 'Accepted'
  GROUP BY booking_date`,
 (err,result)=>{
 
