@@ -17,10 +17,10 @@ router.post('/register', async (req,res)=>{
 
       if(err){
         console.log(err);
-        return res.send("Email already exists");
+        return res.redirect('/register.html?error=exists');
       }
 
-      res.redirect('/login.html');
+      res.redirect('/login.html?success=created');
 
     }
   );
@@ -43,7 +43,7 @@ router.post('/login',(req,res)=>{
       }
 
       if(!result || result.length === 0){
-        return res.send("User not found");
+        return res.redirect('/login.html?error=notfound');
       }
 
       const user = result[0];
@@ -51,7 +51,7 @@ router.post('/login',(req,res)=>{
       const match = await bcrypt.compare(password,user.password);
 
       if(!match){
-        return res.send("Wrong password");
+        return res.redirect('/login.html?error=wrong');
       }
 
       req.session.user = {
