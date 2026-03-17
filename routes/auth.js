@@ -1,34 +1,34 @@
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcryptjs');
 const db = require('../config/db');
 
 /* REGISTER */
+router.post('/register',(req,res)=>{
 
+const {fullname,email,password} = req.body;
 
-router.post('/register', async (req,res)=>{
+db.query(
+"INSERT INTO users (fullname,email,password) VALUES (?,?,?)",
+[fullname,email,password],
+(err)=>{
 
+if(err){
+console.log(err);
+return res.json({
+success:false,
+message:"Email already exists"
+});
+}
 
-  const {fullname,email,password} = req.body;
+return res.json({
+success:true
+});
 
-  const hashed = password;
-
-  db.query(
-    "INSERT INTO users (fullname,email,password) VALUES (?,?,?)",
-    [fullname,email,hashed],
-    (err)=>{
-
-      if(err){
-        console.log(err);
-        return res.send("Email already exists");
-      }
-
-      return res.json({success:true});
-
-    }
-  );
+}
+);
 
 });
+
 
 /* LOGIN */
 router.post('/login',(req,res)=>{
@@ -57,10 +57,8 @@ message:"User not found"
 
 const user = result[0];
 
-// 🔥 SIMPLE CHECK LANG
-const match = (password === user.password);
-
-if(!match){
+// ✅ PLAIN TEXT CHECK
+if(password !== user.password){
 return res.json({
 success:false,
 message:"Wrong password"
@@ -93,19 +91,19 @@ redirect:"/"
 
 /* CHECK LOGIN STATUS */
 router.get('/status',(req,res)=>{
-  if(req.session.user){
-    res.json({loggedIn:true});
-  }else{
-    res.json({loggedIn:false});
-  }
+if(req.session.user){
+res.json({loggedIn:true});
+}else{
+res.json({loggedIn:false});
+}
 });
 
 
 /* LOGOUT */
 router.get('/logout',(req,res)=>{
-  req.session.destroy(()=>{
-    res.redirect('/');
-  });
+req.session.destroy(()=>{
+res.redirect('/');
+});
 });
 
 
