@@ -9,6 +9,9 @@ const db = require('./config/db');
 
 const app = express();
 
+const path = require('path');
+app.use('/uploads', express.static('uploads'));
+
 /* BODY PARSER */
 app.use(express.json());
 app.use(express.urlencoded({ extended:true }));

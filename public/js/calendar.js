@@ -198,4 +198,6 @@ renderCalendar();
 
 /* INITIAL LOAD */
 
+setInterval(()=>{
 renderCalendar();
+},5000);

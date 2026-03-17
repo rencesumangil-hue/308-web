@@ -1131,6 +1131,10 @@ showCalendar();
 
 function openModal(src){
 
+if(!src || src.includes("undefined")){
+src = "/images/no-image.png";
+}
+
 document.getElementById("imageModal").style.display="flex";
 document.getElementById("modalImage").src = src;
 
@@ -1204,14 +1208,16 @@ table.innerHTML+=`
 <td>${b.tattoo_area}</td>
 
 <td>
-<img src="/uploads/${b.tattoo_reference}" 
+<img src="${b.tattoo_reference}" 
 class="image-preview"
+onerror="this.src='/images/no-image.png'"
 onclick="openModal(this.src)">
 </td>
 
 <td>
-<img src="/uploads/${b.proof_of_payment}" 
+<img src="${b.proof_of_payment}"
 class="image-preview"
+onerror="this.src='/images/no-image.png'"
 onclick="openModal(this.src)">
 </td>
 
@@ -1251,14 +1257,16 @@ table.innerHTML+=`
 <td>${b.tattoo_area}</td>
 
 <td>
-<img src="/uploads/${b.tattoo_reference}" 
+<img src="${b.tattoo_reference}" 
 class="image-preview"
+onerror="this.src='/images/no-image.png'"
 onclick="openModal(this.src)">
 </td>
 
 <td>
-<img src="/uploads/${b.proof_of_payment}" 
+<img src="${b.proof_of_payment}"
 class="image-preview"
+onerror="this.src='/images/no-image.png'"
 onclick="openModal(this.src)">
 </td>
 
@@ -1303,14 +1311,16 @@ table.innerHTML+=`
 <td>${b.tattoo_area}</td>
 
 <td>
-<img src="/uploads/${b.tattoo_reference}" 
+<img src="${b.tattoo_reference}" 
 class="image-preview"
+onerror="this.src='/images/no-image.png'"
 onclick="openModal(this.src)">
 </td>
 
 <td>
-<img src="/uploads/${b.proof_of_payment}" 
+<img src="${b.proof_of_payment}"
 class="image-preview"
+onerror="this.src='/images/no-image.png'"
 onclick="openModal(this.src)">
 </td>
 
@@ -1369,7 +1379,10 @@ document.getElementById("totalStat").innerText = total;
 
 }
 
-setInterval(liveUpdate,3000);
+setInterval(()=>{
+liveUpdate();
+loadAccepted(); 
+},3000);
 
 
 let currentBookingId = null;
