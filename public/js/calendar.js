@@ -213,12 +213,12 @@ console.log(err);
 
 function nextMonth(){
 currentDate.setMonth(currentDate.getMonth()+1);
-renderCalendar();
+preloadBookings();
 }
 
 function prevMonth(){
 currentDate.setMonth(currentDate.getMonth()-1);
-renderCalendar();
+preloadBookings();
 }
 
 /* ================= INIT ================= */

@@ -233,7 +233,13 @@ console.log(err);
 return res.json([]);
 }
 
-res.json(result);
+
+const fixed = result.map(r=>({
+...r,
+booking_date: new Date(r.booking_date).toLocaleDateString('en-CA')
+}));
+
+res.json(fixed);
 
 });
 
