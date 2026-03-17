@@ -44,12 +44,20 @@ function togglePass(){
 </div>
 
 <script>
+
 document.getElementById("showPass").addEventListener("change", function() {
     const pass = document.getElementById("password");
     pass.type = this.checked ? "text" : "password";
 });
 
-// 🔥 TOAST FUNCTION
+
+
+
+function togglePass(){
+    const pass = document.getElementById("password");
+    pass.type = pass.type === "password" ? "text" : "password";
+}
+
 function showToast(message){
 const toast = document.createElement("div");
 toast.className = "toast";
@@ -65,7 +73,6 @@ setTimeout(()=>toast.remove(),300);
 },2500);
 }
 
-// 🔥 CHECK URL PARAMS
 const params = new URLSearchParams(window.location.search);
 
 if(params.get("error") === "wrong"){
