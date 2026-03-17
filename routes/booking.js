@@ -203,10 +203,10 @@ router.get('/date-info/:date',(req,res)=>{
 const date = req.params.date;
 
 db.query(
-`SELECT booking_time 
-FROM bookings 
-WHERE booking_date=? 
-AND status='Accepted'`,
+`SELECT booking_time, users.fullname
+FROM bookings
+JOIN users ON bookings.user_id = users.id
+WHERE booking_date=? AND status='Accepted'`,
 [date],
 (err,result)=>{
 
