@@ -6,44 +6,60 @@ const db = require('../config/db');
 /* REGISTER */
 router.post('/register', async (req,res)=>{
 
-  const {fullname,email,password} = req.body;
+try{
 
-  const hashed = await bcrypt.hash(password,10);
+const {fullname,email,password} = req.body;
 
-  db.query(
-    "INSERT INTO users (fullname,email,password) VALUES (?,?,?)",
-    [fullname,email,hashed],
-    (err)=>{
+if(!fullname || !email || !password){
+return res.json({
+success:false,
+message:"All fields required"
+});
+}
 
-      if(err){
+const hashed = await bcrypt.hash(password,10);
 
-        if(err.code === 'ER_DUP_ENTRY'){
-          return res.json({
-          success:false,
-          message:"Email already exists"
-        });
-      }
+db.query(
+"INSERT INTO users (fullname,email,password) VALUES (?,?,?)",
+[fullname,email,hashed],
+(err)=>{
 
-      console.log(err);
-      return res.json({
-        success:false,
-        message:"Database error"
-      });
-    }
+if(err){
 
-      return res.json({
-      success:true
-      });
+if(err.code === 'ER_DUP_ENTRY'){
+return res.json({
+success:false,
+message:"Email already exists"
+});
+}
 
-    }
-  );
+console.log("REGISTER DB ERROR:", err);
+return res.json({
+success:false,
+message:"Database error"
+});
+}
+
+return res.json({
+success:true
+});
+
+}
+);
+
+}catch(e){
+console.log("REGISTER CRASH:", e);
+return res.json({
+success:false,
+message:"Server error"
+});
+}
 
 });
 
-/* LOGIN */
-router.post('/login', async (req,res)=>{
 
-try{
+/* LOGIN */
+router.post('/login',(req,res)=>{
 
 const {email,password} = req.body;
 
@@ -69,7 +85,6 @@ message:"User not found"
 
 const user = result[0];
 
-// ✅ SAFETY CHECK
 if(!user.password){
 return res.json({
 success:false,
@@ -80,7 +95,7 @@ message:"Invalid account"
 let match = false;
 
 try{
-match = await bcrypt.compare(password,user.password);
+match = await bcrypt.compare(password, user.password);
 }catch(e){
 console.log("BCRYPT ERROR:", e);
 return res.json({
@@ -96,6 +111,7 @@ message:"Wrong password"
 });
 }
 
+/* ✅ SUCCESS LOGIN */
 req.session.user = {
 id:user.id,
 email:user.email,
@@ -115,31 +131,25 @@ redirect:"/"
 }
 
 });
-
-}catch(e){
-console.log("LOGIN CRASH:", e);
-return res.json({
-success:false,
-message:"Server error"
 });
-}
 
-});
 
 /* CHECK LOGIN STATUS */
 router.get('/status',(req,res)=>{
-  if(req.session.user){
-    res.json({loggedIn:true});
-  }else{
-    res.json({loggedIn:false});
-  }
+if(req.session.user){
+res.json({loggedIn:true});
+}else{
+res.json({loggedIn:false});
+}
 });
+
 
 /* LOGOUT */
 router.get('/logout',(req,res)=>{
-  req.session.destroy(()=>{
-    res.redirect('/');
-  });
+req.session.destroy(()=>{
+res.redirect('/');
 });
+});
+
 
 module.exports = router;
