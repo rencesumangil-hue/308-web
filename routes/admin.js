@@ -42,19 +42,25 @@ res.json(result);
 /* CALENDAR (ACCEPTED ONLY) */
 router.get('/calendar',(req,res)=>{
 
-db.query(
-`SELECT booking_date, COUNT(*) as total
- FROM bookings
- WHERE status = 'Accepted'
- GROUP BY booking_date`,
-(err,result)=>{
+db.query(`
+SELECT DATE(booking_date) as booking_date, COUNT(*) as total
+FROM bookings
+WHERE status='Accepted'
+GROUP BY DATE(booking_date)
+`,(err,result)=>{
 
 if(err){
 console.log(err);
 return res.json([]);
 }
 
-res.json(result);
+/* FORCE STRING FORMAT (ANTI TIMEZONE BUG) */
+const fixed = result.map(r=>({
+booking_date: r.booking_date.toISOString().split('T')[0],
+total: r.total
+}));
+
+res.json(fixed);
 
 });
 
