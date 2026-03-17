@@ -489,14 +489,14 @@ font-size:14px;
 margin-left:5px;
 }
 
-/* ================= MOBILE RESPONSIVE ================= */
+/* ================= MOBILE RESPONSIVE ADMIN ================= */
 
 @media screen and (max-width: 768px){
 
 /* NAV */
 .admin-nav{
-height:auto;
 flex-direction:column;
+height:auto;
 padding:10px;
 text-align:center;
 }
@@ -509,6 +509,7 @@ height:70px;
 position:static;
 transform:none;
 margin-top:5px;
+font-size:18px;
 }
 
 .nav-right{
@@ -518,37 +519,84 @@ margin-top:8px;
 /* MAIN */
 .main{
 padding:0 15px;
-margin-top:100px;
+margin-top:110px;
 }
 
 /* STATS */
 .stats-container{
-grid-template-columns:1fr;
+display:flex;
+flex-direction:column;
 gap:12px;
 }
 
-/* TABLE SCROLL */
+.stat-card{
+padding:15px;
+flex-direction:row;
+justify-content:space-between;
+}
+
+.stat-number{
+font-size:20px;
+}
+
+/* TABLE */
 table{
 display:block;
 overflow-x:auto;
 white-space:nowrap;
+border-radius:10px;
+}
+
+th, td{
+font-size:12px;
+padding:6px;
 }
 
 /* CALENDAR */
+.calendar-container{
+padding:15px;
+}
+
+.calendar-days{
+display:none;
+}
+
 .calendar-grid{
-grid-template-columns:repeat(3,1fr);
-gap:8px;
+grid-template-columns:repeat(2,1fr);
+gap:10px;
 }
 
 .calendar-day{
-padding:12px 0;
-font-size:14px;
+padding:18px 0;
+font-size:16px;
+border-radius:12px;
 }
 
 /* MODAL */
 .modal-box{
-width:90%;
+width:95%;
 padding:20px;
+border-radius:12px;
+font-size:14px;
+}
+
+/* TOUCH EFFECT */
+.calendar-day:active{
+transform:scale(0.95);
+}
+
+}
+
+/* EXTRA SMALL PHONE */
+@media screen and (max-width: 480px){
+
+.calendar-grid{
+grid-template-columns:repeat(2,1fr);
+}
+
+.calendar-day{
+font-size:14px;
+padding:16px 0;
 }
 
 }
