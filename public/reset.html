@@ -1,0 +1,14 @@
+<form action="/auth/reset-password" method="POST">
+  <h2>Reset Password</h2>
+
+  <input type="hidden" name="email" id="email">
+
+  <input type="password" name="password" placeholder="New Password" required>
+
+  <button type="submit">Reset Password</button>
+</form>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+document.getElementById("email").value = params.get("email");
+</script>

@@ -36,12 +36,8 @@
   <span class="toggle-eye" onclick="togglePass()">👁</span>
 </div>
 
-<script>
-function togglePass(){
-    const pass = document.getElementById("password");
-    pass.type = pass.type === "password" ? "text" : "password";
-}
-</script>
+<div class="g-recaptcha" data-sitekey="YOUR_SITE_KEY"></div>
+
 <div class="login-row">
 
 
@@ -88,8 +84,17 @@ if(params.get("success") === "created"){
 showToast("Account created, please log in");
 }
 
+if(params.get("error") === "captcha"){
+  showToast("Please verify captcha");
+}
+
+if(params.get("success") === "reset"){
+  showToast("Password updated successfully");
+}
 
 </script>
+
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
 </body>
 </html>
