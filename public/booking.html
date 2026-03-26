@@ -84,6 +84,17 @@
 </div>
 
 <script>
+
+
+fetch('/auth/check')
+.then(res => res.json())
+.then(data => {
+    if(!data.loggedIn){
+        window.location.href = "/login.html";
+    }
+});
+
+
 const form = document.getElementById("bookingForm");
 
 const dateInput = document.querySelector("input[name='booking_date']");

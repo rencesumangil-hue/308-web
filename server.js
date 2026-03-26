@@ -66,6 +66,14 @@ app.get('/',(req,res)=>{
   res.sendFile(path.join(__dirname,'public/index.html'));
 });
 
+app.get('/auth/check', (req, res) => {
+    if(req.session.user){
+        res.json({ loggedIn: true });
+    } else {
+        res.json({ loggedIn: false });
+    }
+});
+
 /* SERVER */
 const PORT = process.env.PORT || 3000;
 
