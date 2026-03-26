@@ -47,11 +47,12 @@ nav{
     position:fixed;
     top:0;
     width:100%;
+    height:90px; 
     background:#000;
     display:flex;
     justify-content:space-between;
     align-items:center;
-    padding:20px 8%;
+    padding:0 8%; 
     z-index:1000;
 }
 
@@ -838,18 +839,15 @@ color:black;
 /* ===== LOGO STYLE ===== */
 
 .nav-left{
-    position:relative;
-    width:120px;   
+    display:flex;
+    align-items:center;
 }
 
 .logo img{
-    height:95px;               
+    height:70px;
     width:auto;
-    position:absolute;
-    top:50%;
-    left:-70px;                
-    transform:translateY(-50%);
-    
+    position:static; 
+    transform:none;
 }
 
 /* ===== PAGE LOGO (Booking & Login) ===== */
@@ -1058,4 +1056,25 @@ transition:0.3s;
 
 .toggle-eye:hover{
 color:#fff;
+}
+
+
+.zoom-download{
+    position:absolute;
+    top:30px;
+    right:90px; 
+    background:#ff3c3c;
+    color:white;
+    padding:8px 12px;
+    border-radius:6px;
+    text-decoration:none;
+    cursor:pointer;
+    font-size:16px;
+    z-index:10000;
+    transition:0.3s;
+}
+
+.zoom-download:hover{
+    background:#cc0000;
+    transform:scale(1.1);
 }

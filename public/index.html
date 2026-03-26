@@ -19,7 +19,7 @@
     <a href="#portfolio">Portfolio</a>
     <a href="#schedule">Schedule</a>
     <a href="#about">About</a>
-    <a href="/booking.html">Book Appointment</a>
+    <a href="/booking/check">Book Appointment</a>
 </div>
 
 <div class="nav-right" id="authArea"></div>
@@ -141,6 +141,10 @@ crafted with precision, safety, and creativity.
 
     <span class="zoom-close" onclick="closeZoom()">✕</span>
 
+    <a id="downloadBtn" class="zoom-download" download>
+        ⬇
+    </a>
+
     <span class="zoom-arrow left" onclick="prevImage()">❮</span>
 
     <img id="zoomedImage">
@@ -186,7 +190,15 @@ function closeGallery(){
 
 function zoomImage(index){
     currentIndex = index;
-    document.getElementById('zoomedImage').src = currentImages[currentIndex];
+
+    const img = document.getElementById('zoomedImage');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    img.src = currentImages[currentIndex];
+
+  
+    downloadBtn.href = currentImages[currentIndex];
+
     document.getElementById('imageZoomModal').style.display = "flex";
 }
 
@@ -210,6 +222,8 @@ img.onerror = function(){
     img.src = currentImages[0];
 };
 
+downloadBtn.href = currentImages[currentIndex];
+
 }
 
 function prevImage(){
@@ -227,6 +241,8 @@ img.onerror = function(){
     currentIndex = 0;
     img.src = currentImages[0];
 };
+
+downloadBtn.href = currentImages[currentIndex];
 
 }
 </script>
