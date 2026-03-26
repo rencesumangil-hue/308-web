@@ -1,14 +1,50 @@
-<form action="/auth/reset-password" method="POST">
+<!DOCTYPE html>
+<html>
+<head>
+<title>Reset Password</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body class="login-page">
+
+<nav>
+  <div class="nav-left">
+    <div class="logo">
+      <a href="/index.html">
+        <img src="images/mlc-logo.png">
+      </a>
+    </div>
+  </div>
+
+  <div class="nav-center">
+    <a href="/index.html#home">Home</a>
+    <a href="/index.html#portfolio">Portfolio</a>
+    <a href="/index.html#schedule">Schedule</a>
+    <a href="/index.html#about">About</a>
+    <a href="/booking.html">Book Appointment</a>
+  </div>
+
+  <div class="nav-right"></div>
+
+</nav>
+
+<div class="form-container">
   <h2>Reset Password</h2>
 
-  <input type="hidden" name="email" id="email">
+  <form action="/auth/reset-password" method="POST">
 
-  <input type="password" name="password" placeholder="New Password" required>
+    <input type="hidden" name="email" id="email">
 
-  <button type="submit">Reset Password</button>
-</form>
+    <input type="password" name="password" placeholder="New Password" required>
+
+    <button type="submit">Reset Password</button>
+  </form>
+</div>
 
 <script>
 const params = new URLSearchParams(window.location.search);
 document.getElementById("email").value = params.get("email");
 </script>
+
+</body>
+</html>
