@@ -725,16 +725,13 @@ transform:translateY(-2px);
 /* ===== MY BOOKINGS ===== */
 
 .booking-card{
-background:rgba(20,20,20,0.75);
-padding:12px 18px; 
-margin:10px 0;      
+background:#1a1a1a;
+padding:15px 20px;
 border-radius:12px;
 display:flex;
-justify-content:space-between;
-align-items:center;
-backdrop-filter:blur(8px);
-border:1px solid rgba(255,255,255,0.05);
-box-shadow:0 0 15px rgba(0,0,0,0.5);
+flex-direction:column;
+gap:8px;
+box-shadow:0 0 15px rgba(0,0,0,0.6);
 }
 
 .booking-card p{
@@ -749,11 +746,28 @@ box-shadow:
 0 0 20px rgba(139,0,0,0.2);
 }
 
+.booking-left{
+display:flex;
+flex-direction:column;
+}
+
+.status-text{
+margin-top:5px;
+}
+
 /* Booking Title */
 .booking-title{
 font-weight:600;
 margin-bottom:10px;
 }
+
+.bookings-wrapper{
+max-width:500px;
+margin:40px auto;
+display:flex;
+flex-direction:column;
+gap:15px;
+}   
 
 /* Status Badge */
 

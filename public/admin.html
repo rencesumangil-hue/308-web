@@ -1148,7 +1148,7 @@ onclick="openModal(this.src)">
 <td>
 <span class="status-badge accepted">Accepted</span>
 
-<button onclick="openFinishModal(${b.id})" 
+<button onclick="finishBooking(${b.id})" 
 style="background:#3b82f6;color:white;padding:5px 10px;border-radius:6px;margin-left:5px;">
 ✔
 </button>
@@ -1387,7 +1387,10 @@ status:'Finished'
 if(data.success){
 
 closeFinishModal();
+
+  
 loadAcceptedBookings();
+loadFinishedBookings();
 liveUpdate();
 
 }
