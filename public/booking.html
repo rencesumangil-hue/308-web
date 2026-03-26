@@ -166,8 +166,15 @@ function openGcash(){
 
 function closeGcash(){
     document.getElementById("gcashModal").style.display="none";
-} 
+}
 
+
+window.onclick = function(e){
+    const modal = document.getElementById("gcashModal");
+    if(e.target === modal){
+        closeGcash();
+    }
+}
 </script>
 
 <div id="toast" class="toast"></div>
@@ -200,7 +207,7 @@ function closeGcash(){
 
         <img src="/images/1.jpg" alt="GCash QR">
 
-        <button onclick="closeGcash()">Close</button>
+
 
     </div>
 

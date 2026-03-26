@@ -999,17 +999,20 @@ z-index:9999;
 
 .gcash-box{
 background:#111;
-padding:25px;
-border-radius:12px;
+padding:35px;
+border-radius:16px;
 text-align:center;
-box-shadow:0 0 30px rgba(0,0,0,0.7);
+box-shadow:0 0 40px rgba(0,0,0,0.8);
 animation:fadeIn .3s ease;
+max-width:400px;
+width:90%;
 }
 
 .gcash-box img{
-width:250px;
-border-radius:10px;
-margin:15px 0;
+width:100%;
+max-width:320px;
+border-radius:12px;
+margin:20px 0;
 }
 
 .gcash-note{
