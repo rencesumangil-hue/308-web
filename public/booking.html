@@ -47,6 +47,12 @@
 <option value="Chest">Chest</option>
 </select>
 
+<div style="text-align:center; margin-bottom:15px;">
+    <button type="button" onclick="openGcash()" class="btn">
+        View GCash QR
+    </button>
+</div>
+
 <label>Proof of Payment:</label>
 <input type="file" name="proof_of_payment" required>
 <input type="text" name="mobile_number" placeholder="Mobile Number" required>
@@ -154,6 +160,8 @@ const today = new Date().toISOString().split('T')[0];
 document.getElementById("bookingDate").setAttribute("min", today);
 
 
+
+
 </script>
 
 <div id="toast" class="toast"></div>
@@ -175,6 +183,22 @@ document.getElementById("bookingDate").setAttribute("min", today);
 
 </div>
 
+
+<div id="gcashModal" class="gcash-modal">
+
+    <div class="gcash-box">
+
+        <p class="gcash-note">
+            500 downpayment and refundable upon visiting the shop.
+        </p>
+
+        <img src="/images/1.jpg" alt="GCash QR">
+
+        <button onclick="closeGcash()">Close</button>
+
+    </div>
+
+</div>
 
 </body>
 </html>
