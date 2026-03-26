@@ -160,7 +160,13 @@ const today = new Date().toISOString().split('T')[0];
 document.getElementById("bookingDate").setAttribute("min", today);
 
 
+function openGcash(){
+    document.getElementById("gcashModal").style.display="flex";
+}
 
+function closeGcash(){
+    document.getElementById("gcashModal").style.display="none";
+} 
 
 </script>
 
@@ -189,7 +195,7 @@ document.getElementById("bookingDate").setAttribute("min", today);
     <div class="gcash-box">
 
         <p class="gcash-note">
-            500 downpayment and refundable upon visiting the shop.
+            500 downpayment and refundable upon visiting our shop
         </p>
 
         <img src="/images/1.jpg" alt="GCash QR">

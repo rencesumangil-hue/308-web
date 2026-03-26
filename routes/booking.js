@@ -244,13 +244,6 @@ res.json(fixed);
 });
 
 });
-
-function openGcash(){
-    document.getElementById("gcashModal").style.display="flex";
-}
-
-function closeGcash(){
-    document.getElementById("gcashModal").style.display="none";
-}
+  
 
 module.exports = router;
