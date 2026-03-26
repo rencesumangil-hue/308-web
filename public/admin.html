@@ -638,7 +638,7 @@ Admin
 <div class="stat-icon total-icon">✔</div>
 <div>
 <div class="stat-title">Finished</div>
-<div class="stat-number" id="finishedStat">0</div>
+
 </div>
 </div>
 
@@ -925,7 +925,9 @@ document.getElementById("deniedStat").innerText = denied;
 let total = 0;
 
 data.forEach(b=>{
-if(b.status !== "Denied") total++;
+if(b.status !== "Denied" && b.status !== "Finished"){
+total++;
+}
 });
 
 document.getElementById("totalStat").innerText = total;
@@ -1267,7 +1269,7 @@ document.getElementById("deniedStat").innerText=denied;
 let total = 0;
 
 data.forEach(b=>{
-if(b.status !== "Denied"){
+if(b.status !== "Denied" && b.status !== "Finished"){
 total++;
 }
 });
