@@ -8,6 +8,13 @@ router.post('/register', async (req,res)=>{
 
   const {fullname,email,password} = req.body;
 
+  
+  const regex = /^(?=.*[A-Z])(?=.*[\W_]).{7,}$/;
+
+  if(!regex.test(password)){
+    return res.redirect('/register.html?error=weak');
+  }
+
   const hashed = await bcrypt.hash(password,10);
 
   db.query(

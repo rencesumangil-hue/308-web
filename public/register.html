@@ -27,7 +27,7 @@
 
 <div class="form-container">
 <h2>Create Account</h2>
-<form action="/auth/register" method="POST">
+<form action="/auth/register" method="POST" onsubmit="return validatePassword()">
 <input type="text" name="fullname" placeholder="Full Name" required>
 <input type="email" name="email" placeholder="Email" required>
 <div class="password-wrapper">
@@ -59,10 +59,28 @@ const params = new URLSearchParams(window.location.search);
 if(params.get("error") === "exists"){
 showToast("Email already exists");
 }
+if(params.get("error") === "weak"){
+  showToast("Password must be 7+ chars, 1 uppercase, 1 special character");
+}
 
 function togglePass(){
   const pass = document.getElementById("password");
   pass.type = pass.type === "password" ? "text" : "password";
+}
+
+
+function validatePassword(){
+  const password = document.getElementById("password").value;
+
+ 
+  const regex = /^(?=.*[A-Z])(?=.*[\W_]).{7,}$/;
+
+  if(!regex.test(password)){
+    showToast("Password must be 7+ chars, 1 uppercase, 1 special character");
+    return false; 
+  }
+
+  return true;
 }
 
 </script>
