@@ -832,6 +832,8 @@ Admin
 
 <script>
 
+let currentFinishId = null;
+
 /* NAVIGATION */
 function showCalendar(){
 
@@ -969,10 +971,10 @@ total++;
 document.getElementById("totalStat").innerText = total;
 
 
-const table=document.getElementById("bookingTable");
-table.innerHTML="";
-
 let pendingCount = 0;
+
+const table = document.getElementById("pendingTable");
+table.innerHTML = "";
 
 data.forEach(b=>{
 
