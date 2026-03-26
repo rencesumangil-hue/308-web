@@ -58,7 +58,7 @@ font-size:22px;
 font-weight:600;
 }
 
-/* ===== ADMIN NAV (CLONE OF HOME NAV) ===== */
+/*  ADMIN NAV  */
 
 .admin-nav{
 position:fixed;
@@ -69,7 +69,7 @@ height:60px;
 background:#000;
 display:flex;
 align-items:center;
-padding:0 8%; /* SAME AS HOME */
+padding:0 8%; 
 z-index:2000;
 }
 
@@ -586,13 +586,49 @@ justify-content:center;
 z-index:9999;
 }
 
+.modal{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.7);
+justify-content:center;
+align-items:center;
+z-index:9999;
+}
+
 .modal-box{
 background:#111;
-padding:30px;
+padding:25px;
 border-radius:12px;
-color:white;
-min-width:320px;
-box-shadow:0 0 20px rgba(0,0,0,0.6);
+text-align:center;
+width:300px; 
+box-shadow:0 0 20px rgba(0,0,0,0.8);
+}
+
+.modal-box.small{
+width:280px; /* 🔥 mas maliit pa */
+}
+
+.modal-actions{
+margin-top:20px;
+display:flex;
+justify-content:center;
+gap:10px;
+}
+
+.modal-actions button{
+padding:8px 15px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+}
+
+.modal-actions .danger{
+background:#ff3c3c;
+color:#fff;
 }
 
 .modal-close-btn{
@@ -1112,7 +1148,7 @@ onclick="openModal(this.src)">
 <td>
 <span class="status-badge accepted">Accepted</span>
 
-<button onclick="finishBooking(${b.id})" 
+<button onclick="openFinishModal(${b.id})" 
 style="background:#3b82f6;color:white;padding:5px 10px;border-radius:6px;margin-left:5px;">
 ✔
 </button>
@@ -1328,14 +1364,21 @@ liveUpdate();
 }
 
 function finishBooking(id){
+  currentFinishId = id;
+  document.getElementById("finishModal").style.display = "flex";
+}
 
-if(!confirm("Mark this tattoo session as FINISHED?")) return;
+function closeFinishModal(){
+  document.getElementById("finishModal").style.display = "none";
+}
+
+function confirmFinish(){
 
 fetch('/admin/update',{
 method:'POST',
 headers:{'Content-Type':'application/json'},
 body:JSON.stringify({
-id:id,
+id: currentFinishId,
 status:'Finished'
 })
 })
@@ -1343,6 +1386,7 @@ status:'Finished'
 .then(data=>{
 if(data.success){
 
+closeFinishModal();
 loadAcceptedBookings();
 liveUpdate();
 
@@ -1483,6 +1527,18 @@ Yes, Cancel
 
 </div>
 
+</div>
+
+<div id="finishModal" class="modal">
+  <div class="modal-box small">
+    <h3>Finish Booking</h3>
+    <p>Mark this tattoo session as <b>FINISHED?</b></p>
+
+    <div class="modal-actions">
+      <button onclick="closeFinishModal()">Cancel</button>
+      <button class="danger" onclick="confirmFinish()">Yes</button>
+    </div>
+  </div>
 </div>
 
 </body>
