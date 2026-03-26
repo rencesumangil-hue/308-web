@@ -1033,3 +1033,29 @@ cursor:pointer;
 .gcash-box button:hover{
 background:#cc0000;
 }
+
+/* show password*/
+.password-wrapper{
+position:relative;
+width:100%;
+}
+
+.password-wrapper input{
+width:100%;
+padding-right:40px;
+}
+
+.toggle-eye{
+position:absolute;
+right:12px;
+top:50%;
+transform:translateY(-50%);
+cursor:pointer;
+font-size:18px;
+color:#aaa;
+transition:0.3s;
+}
+
+.toggle-eye:hover{
+color:#fff;
+}

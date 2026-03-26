@@ -30,7 +30,11 @@
 <form action="/auth/login" method="POST">
 
 <input type="email" name="email" placeholder="Email" required>
-<input type="password" id="password" name="password" placeholder="Password" required>
+
+<div class="password-wrapper">
+  <input type="password" id="password" name="password" placeholder="Password" required>
+  <span class="toggle-eye" onclick="togglePass()">👁</span>
+</div>
 
 <script>
 function togglePass(){
@@ -39,10 +43,7 @@ function togglePass(){
 }
 </script>
 <div class="login-row">
-    <label class="show-pass">
-        <input type="checkbox" onclick="togglePass()">
-        Show Password
-    </label>
+
 
     <button type="submit">Login</button>
 </div>
