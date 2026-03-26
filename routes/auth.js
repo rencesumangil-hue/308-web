@@ -51,7 +51,7 @@ router.post('/login', async (req,res)=>{
       null,
       {
         params:{
-          secret:"6LfHXJksAAAAAIf9Q21oSyJiNQYK6ajFV1eQq6BR", // secret key
+          secret:"6LfHXJksAAAAAMxdNfCzboIlYd0kBrLDyY0JxusO", // secret key
           response:captcha
         }
       }
