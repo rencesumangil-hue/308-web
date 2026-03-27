@@ -86,7 +86,6 @@
 
 <script>
 
-
 fetch('/auth/check')
 .then(res => res.json())
 .then(data => {
@@ -95,20 +94,37 @@ fetch('/auth/check')
     }
 });
 
-
 const form = document.getElementById("bookingForm");
-
 const dateInput = document.querySelector("input[name='booking_date']");
 const timeSelect = document.querySelector("select[name='booking_time']");
+const submitBtn = document.querySelector("button[type='submit']");
+
+/* ================= DATE CHANGE ================= */
 
 dateInput.addEventListener("change", async ()=>{
 
 const date = dateInput.value;
 
+/* ================= CHECK FULL DATE ================= */
+const resCount = await fetch('/booking/count/' + date);
+const countData = await resCount.json();
+
+if(countData.total >= 3){
+
+showFullModal(date);
+dateInput.value = "";
+submitBtn.disabled = true;
+return;
+
+}else{
+submitBtn.disabled = false;
+}
+
+/* ================= LOAD TIME BOOKINGS ================= */
 const res = await fetch(`/booking/date-info/${date}`);
 const data = await res.json();
 
-/* count bookings per time */
+/* COUNT PER TIME */
 let timeCount = {};
 
 data.forEach(b=>{
@@ -118,195 +134,139 @@ timeCount[b.booking_time]=0;
 timeCount[b.booking_time]++;
 });
 
-/* RESET ALL OPTIONS FIRST */
+/* RESET OPTIONS */
 Array.from(timeSelect.options).forEach(option=>{
 if(!option.value) return;
 
 option.disabled = false;
 option.textContent = option.value;
+option.style.color = "#fff";
 });
 
-/* APPLY FULL LOGIC */
+/* APPLY FULL */
 Array.from(timeSelect.options).forEach(option=>{
 
 const time = option.value;
 
-if(timeCount[time] >=2){  
-
-
+if(timeCount[time] >= 2){
 option.disabled = true;
 option.textContent = time + " (FULL)";
 option.style.color = "#888";
-
 }
 
 });
 
-/* APPLY PAST TIME CHECK */
+/* APPLY PAST TIME */
 disablePastTimes();
 
 });
 
+/* ================= SUBMIT ================= */
+
 form.addEventListener("submit", function(e){
-    e.preventDefault();
+e.preventDefault();
 
-    fetch('/booking/create', {
-        method:'POST',
-        body:new FormData(form)
-    })
-    .then(res=>res.json())
-    .then(data=>{
-        if(data.success){
-            showToast("Booking submitted successfully! Waiting for admin approval.");
+fetch('/booking/create', {
+method:'POST',
+body:new FormData(form)
+})
+.then(res=>res.json())
+.then(data=>{
+if(data.success){
+showToast("Booking submitted successfully!");
 
-            setTimeout(()=>{
-            window.location.href="/mybookings.html";
-            },2000);
-        }
-    })
-    .catch(()=>{
-    showToast("Error submitting booking.");
-    });
+setTimeout(()=>{
+window.location.href="/mybookings.html";
+},2000);
+}else{
+showToast(data.message || "Booking failed");
+}
+});
 });
 
+/* ================= TOAST ================= */
+
 function showToast(message){
-
 const toast = document.getElementById("toast");
-
 toast.textContent = message;
-
 toast.classList.add("show");
 
 setTimeout(()=>{
 toast.classList.remove("show");
 },3000);
-
 }
 
+/* ================= FULL MODAL ================= */
+
 function showFullModal(date){
-
-const message = document.getElementById("fullMessage");
-
-message.innerText = date + " is already fully booked. Please choose another date.";
-
+document.getElementById("fullMessage").innerText =
+date + " is already fully booked.";
 document.getElementById("fullModal").style.display = "flex";
-
 }
 
 function closeFullModal(){
 document.getElementById("fullModal").style.display = "none";
 }
 
+/* ================= DATE LIMIT ================= */
+
 const today = new Date().toISOString().split('T')[0];
 document.getElementById("bookingDate").setAttribute("min", today);
 
+/* ================= GCASH ================= */
 
 function openGcash(){
-    document.getElementById("gcashModal").style.display="flex";
+document.getElementById("gcashModal").style.display="flex";
 }
 
 function closeGcash(){
-    document.getElementById("gcashModal").style.display="none";
+document.getElementById("gcashModal").style.display="none";
 }
-
 
 window.onclick = function(e){
-    const modal = document.getElementById("gcashModal");
-    if(e.target === modal){
-        closeGcash();
-    }
+const modal = document.getElementById("gcashModal");
+if(e.target === modal){
+closeGcash();
+}
 }
 
-/* RESET FIRST */
-timeSelect.querySelectorAll("option").forEach(option=>{
-if(!option.value) return;
-option.disabled = false;
-option.style.color = "#fff";
-});
+/* ================= PAST TIME ================= */
 
 function disablePastTimes(){
 
-const timeSelect = document.querySelector("select[name='booking_time']");
-if(!timeSelect) return;
-
-const selectedDate = document.querySelector("input[name='booking_date']").value;
-
+const selectedDate = dateInput.value;
 const today = new Date().toISOString().split('T')[0];
 
-/* ONLY APPLY IF TODAY */
 if(selectedDate !== today) return;
 
-/* CURRENT TIME */
 const now = new Date();
 let currentHour = now.getHours();
 
-/* convert to 12-hour format */
 timeSelect.querySelectorAll("option").forEach(option=>{
 
 if(!option.value) return;
 
-/* parse hour */
 let hour = parseInt(option.value);
 
-/* convert PM */
 if(option.value.includes("PM") && hour !== 12){
 hour += 12;
 }
 
-/* convert 12AM */
 if(option.value.includes("AM") && hour === 12){
 hour = 0;
 }
 
-const dateInput = document.querySelector('input[name="booking_date"]');
-
-/* CHECK IF DATE IS FULL */
-dateInput.addEventListener('change', async function(){
-
-const selectedDate = this.value;
-
-const res = await fetch('/booking/count/' + selectedDate);
-const data = await res.json();
-
-/* IF FULL (3 BOOKINGS) */
-if(data.total >= 3){
-
-alert("This date is fully booked. Please choose another date.");
-
-/* CLEAR INPUT */
-this.value = "";
-
-/* OPTIONAL: disable submit */
-document.querySelector("button[type='submit']").disabled = true;
-
-}else{
-
-document.querySelector("button[type='submit']").disabled = false;
-
-}
-
-});
-
-/* DISABLE PAST */
 if(hour < currentHour){
 option.disabled = true;
 option.style.color = "#888";
-}else{
-option.disabled = false;
-option.style.color = "#fff";
 }
 
 });
 
 }
 
+/* INIT */
 document.addEventListener("DOMContentLoaded", disablePastTimes);
-
-/* kapag nag change ng date */
-document.querySelector("input[name='booking_date']")
-.addEventListener("change", disablePastTimes);
-
-
 
 </script>
 
