@@ -76,7 +76,7 @@ const tattoo = req.files?.tattoo_reference?.[0]?.filename;
 const proof = req.files?.proof_of_payment?.[0]?.filename;
 
 /* ============================= */
-/* CHECK DAILY LIMIT (MAX 6) */
+/* CHECK DAILY LIMIT (MAX 3) */
 /* ============================= */
 
 db.query(
@@ -110,7 +110,7 @@ console.log(err);
 return res.json({success:false});
 }
 
-if(result2[0].total >= 3){
+if(result2[0].total >= 2){
 return res.json({
 success:false,
 message:"This time slot is already full."
@@ -206,7 +206,7 @@ db.query(
 `SELECT booking_time, users.fullname
 FROM bookings
 JOIN users ON bookings.user_id = users.id
-WHERE booking_date=? AND status='Accepted'`,
+WHERE booking_date=? AND status='Denied'`,
 [date],
 (err,result)=>{
 

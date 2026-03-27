@@ -109,33 +109,41 @@ const res = await fetch(`/booking/date-info/${date}`);
 const data = await res.json();
 
 /* count bookings per time */
-
 let timeCount = {};
 
 data.forEach(b=>{
-
 if(!timeCount[b.booking_time]){
 timeCount[b.booking_time]=0;
 }
-
 timeCount[b.booking_time]++;
-
 });
 
-/* disable full times */
+/* RESET ALL OPTIONS FIRST */
+Array.from(timeSelect.options).forEach(option=>{
+if(!option.value) return;
 
+option.disabled = false;
+option.textContent = option.value;
+});
+
+/* APPLY FULL LOGIC */
 Array.from(timeSelect.options).forEach(option=>{
 
 const time = option.value;
 
-if(timeCount[time] >=2){
+if(timeCount[time] >=2){  
+
 
 option.disabled = true;
-option.text = time + " (FULL)";
+option.textContent = time + " (FULL)";
+option.style.color = "#888";
 
 }
 
 });
+
+/* APPLY PAST TIME CHECK */
+disablePastTimes();
 
 });
 
@@ -209,6 +217,13 @@ window.onclick = function(e){
     }
 }
 
+/* RESET FIRST */
+timeSelect.querySelectorAll("option").forEach(option=>{
+if(!option.value) return;
+option.disabled = false;
+option.style.color = "#fff";
+});
+
 function disablePastTimes(){
 
 const timeSelect = document.querySelector("select[name='booking_time']");
@@ -243,6 +258,35 @@ if(option.value.includes("AM") && hour === 12){
 hour = 0;
 }
 
+const dateInput = document.querySelector('input[name="booking_date"]');
+
+/* CHECK IF DATE IS FULL */
+dateInput.addEventListener('change', async function(){
+
+const selectedDate = this.value;
+
+const res = await fetch('/booking/count/' + selectedDate);
+const data = await res.json();
+
+/* IF FULL (3 BOOKINGS) */
+if(data.total >= 3){
+
+alert("This date is fully booked. Please choose another date.");
+
+/* CLEAR INPUT */
+this.value = "";
+
+/* OPTIONAL: disable submit */
+document.querySelector("button[type='submit']").disabled = true;
+
+}else{
+
+document.querySelector("button[type='submit']").disabled = false;
+
+}
+
+});
+
 /* DISABLE PAST */
 if(hour < currentHour){
 option.disabled = true;
@@ -261,6 +305,9 @@ document.addEventListener("DOMContentLoaded", disablePastTimes);
 /* kapag nag change ng date */
 document.querySelector("input[name='booking_date']")
 .addEventListener("change", disablePastTimes);
+
+
+
 </script>
 
 <div id="toast" class="toast"></div>

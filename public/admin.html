@@ -907,13 +907,13 @@ className += " today";
 const total = bookingCounts[formattedDate] || 0;
 
 /* COLORS */
-if(total >=1 && total <=2){
+if(total ===1){
 className += " green";
 }
-else if(total >=3 && total <=4){
+else if(total ===2){
 className += " yellow";
 }
-else if(total >=5){
+else if(total >=3){
 className += " red";
 }
 
