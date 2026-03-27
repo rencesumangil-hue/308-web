@@ -208,6 +208,59 @@ window.onclick = function(e){
         closeGcash();
     }
 }
+
+function disablePastTimes(){
+
+const timeSelect = document.querySelector("select[name='booking_time']");
+if(!timeSelect) return;
+
+const selectedDate = document.querySelector("input[name='booking_date']").value;
+
+const today = new Date().toISOString().split('T')[0];
+
+/* ONLY APPLY IF TODAY */
+if(selectedDate !== today) return;
+
+/* CURRENT TIME */
+const now = new Date();
+let currentHour = now.getHours();
+
+/* convert to 12-hour format */
+timeSelect.querySelectorAll("option").forEach(option=>{
+
+if(!option.value) return;
+
+/* parse hour */
+let hour = parseInt(option.value);
+
+/* convert PM */
+if(option.value.includes("PM") && hour !== 12){
+hour += 12;
+}
+
+/* convert 12AM */
+if(option.value.includes("AM") && hour === 12){
+hour = 0;
+}
+
+/* DISABLE PAST */
+if(hour < currentHour){
+option.disabled = true;
+option.style.color = "#888";
+}else{
+option.disabled = false;
+option.style.color = "#fff";
+}
+
+});
+
+}
+
+document.addEventListener("DOMContentLoaded", disablePastTimes);
+
+/* kapag nag change ng date */
+document.querySelector("input[name='booking_date']")
+.addEventListener("change", disablePastTimes);
 </script>
 
 <div id="toast" class="toast"></div>

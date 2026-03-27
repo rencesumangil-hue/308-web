@@ -110,7 +110,7 @@ console.log(err);
 return res.json({success:false});
 }
 
-if(result2[0].total >= 2){
+if(result2[0].total >= 3){
 return res.json({
 success:false,
 message:"This time slot is already full."
