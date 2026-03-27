@@ -71,18 +71,18 @@ calendar.appendChild(box);
 function applyBookingStyles(date, element, data, total){
 
 /* COLOR SYSTEM */
-if(total >=1 && total <=2){
+if(total ===1){
 element.style.background="#16a34a";
 }
-else if(total >=3 && total <=4){
+else if(total ===2){
 element.style.background="#facc15";
 }
-else if(total >=5){
+else if(total >=3){
 element.style.background="#dc2626";
 }
 
 /* FULL DAY LOCK */
-if(total >=6){
+if(total >=3){
 
 element.style.background="#7f1d1d";
 element.style.cursor="not-allowed";
