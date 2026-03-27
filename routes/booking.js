@@ -89,7 +89,7 @@ console.log(err);
 return res.json({success:false});
 }
 
-if(result[0].total >= 6){
+if(result[0].total >= 3){
 return res.json({
 success:false,
 message:"This date is already fully booked. Please choose another date."
