@@ -203,8 +203,9 @@ router.get('/date-info/:date',(req,res)=>{
 const date = req.params.date;
 
 db.query(
-`SELECT booking_time
+`SELECT booking_time, users.fullname
 FROM bookings
+JOIN users ON bookings.user_id = users.id
 WHERE booking_date=? AND status!='Denied'`,
 [date],
 (err,result)=>{
@@ -224,7 +225,10 @@ res.json(result);
 router.get('/all',(req,res)=>{
 
 db.query(
-"SELECT * FROM bookings WHERE status='Accepted'",
+`SELECT bookings.*, users.fullname 
+ FROM bookings 
+ JOIN users ON bookings.user_id = users.id
+ WHERE bookings.status='Accepted'`,
 (err,result)=>{
 
 if(err){
