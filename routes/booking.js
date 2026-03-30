@@ -123,7 +123,7 @@ message:"This time slot is already full."
 
 /* INSERT */
 await db.collection("bookings").add({
-  fullname: req.session.user.fullname || req.session.user.email,
+  fullname: req.body.fullname || "Unknown",
   user_id,
   booking_date: formattedDate,
   booking_time,
