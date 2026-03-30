@@ -8,6 +8,7 @@ const bcrypt = require('bcryptjs');
 const db = require('./config/db');
 
 const app = express();
+const admin = require('firebase-admin');
 
 
 app.use('/uploads', express.static('uploads'));
@@ -42,22 +43,33 @@ app.use('/booking', require('./routes/booking'));
 app.use('/admin', require('./routes/admin'));
 
 /* CREATE ADMIN (FIRST RUN ONLY) */
-app.get('/create-admin', async (req,res)=>{
+app.get('/fix-admin', async (req,res)=>{
 
-  const hashed = await bcrypt.hash('admin123',10);
+  const bcrypt = require('bcryptjs');
 
-  db.query(
-    "INSERT INTO users (fullname,email,password,role) VALUES (?,?,?,?)",
-    ['Admin','admin@mlc.com',hashed,'admin'],
-    (err)=>{
-      if(err){
-        console.log(err);
-        return res.send("Admin already exists");
-      }
+  const email = "admin@mlc.com";
+  const password = "admin123";
 
-      res.send("Admin Created");
-    }
-  );
+  try{
+
+    // 🔥 get user sa Firebase Auth
+    const userRecord = await admin.auth().getUserByEmail(email);
+    const uid = userRecord.uid;
+
+    // 🔥 gumawa ng hash
+    const hashed = await bcrypt.hash(password,10);
+
+    // 🔥 update Firestore
+    await db.collection("users").doc(uid).update({
+      password: hashed
+    });
+
+    res.send("Admin password fixed ✅");
+
+  }catch(err){
+    console.log(err);
+    res.send(err.message);
+  }
 
 });
 
@@ -66,7 +78,7 @@ app.get('/',(req,res)=>{
   res.sendFile(path.join(__dirname,'public/index.html'));
 });
 
-app.get('/auth/check', (req, res) => {
+app.get('/auth/status', (req, res) => {
     if(req.session.user){
         res.json({ loggedIn: true });
     } else {

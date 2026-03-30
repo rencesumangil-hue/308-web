@@ -1,37 +1,49 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
-const db = require('../config/db');
+const db = require('../config/db'); // 🔥 Firestore
 const axios = require('axios');
+const admin = require('firebase-admin'); // 🔥 ADD
 
 /* REGISTER */
 router.post('/register', async (req,res)=>{
 
   const {fullname,email,password} = req.body;
 
-  
   const regex = /^(?=.*[A-Z])(?=.*[\W_]).{7,}$/;
 
   if(!regex.test(password)){
     return res.redirect('/register.html?error=weak');
   }
 
-  const hashed = await bcrypt.hash(password,10);
+  try{
 
-  db.query(
-    "INSERT INTO users (fullname,email,password) VALUES (?,?,?)",
-    [fullname,email,hashed],
-    (err)=>{
+    // 🔥 CREATE SA FIREBASE AUTH
+    const userRecord = await admin.auth().createUser({
+      email,
+      password
+    });
 
-      if(err){
-        console.log(err);
-        return res.redirect('/register.html?error=exists');
-      }
+    const uid = userRecord.uid;
 
-      res.redirect('/login.html?success=created');
+    // 🔥 HASH (KEEP MO OLD SYSTEM STYLE)
+    const hashed = await bcrypt.hash(password,10);
 
-    }
-  );
+    // 🔥 SAVE SA FIRESTORE
+    await db.collection("users").doc(uid).set({
+      fullname,
+      email,
+      password: hashed,
+      role: "client",
+      created_at: new Date()
+    });
+
+    res.redirect('/login.html?success=created');
+
+  }catch(err){
+    console.log(err);
+    return res.redirect('/register.html?error=exists');
+  }
 
 });
 
@@ -40,7 +52,7 @@ router.post('/login', async (req,res)=>{
 
   const {email,password, "g-recaptcha-response": captcha} = req.body;
 
-  // 🔥 CAPTCHA CHECK
+  /*/ 🔥 CAPTCHA (UNCHANGED)
   if(!captcha){
     return res.redirect('/login.html?error=captcha');
   }
@@ -51,7 +63,7 @@ router.post('/login', async (req,res)=>{
       null,
       {
         params:{
-          secret:"6LfHXJksAAAAAMxdNfCzboIlYd0kBrLDyY0JxusO", // secret key
+          secret:"6LfHXJksAAAAAMxdNfCzboIlYd0kBrLDyY0JxusO",
           response:captcha
         }
       }
@@ -63,44 +75,47 @@ router.post('/login', async (req,res)=>{
 
   }catch(err){
     return res.redirect('/login.html?error=captcha');
-  }
+  }*/
 
-  db.query(
-    "SELECT * FROM users WHERE email=?",
-    [email],
-    async (err,result)=>{
+  try{
 
-      if(err){
-      console.log("LOGIN DB ERROR:", err);
-      return res.status(500).send("Database error");
-      }
+    // 🔥 CHECK SA FIREBASE AUTH
+    const userRecord = await admin.auth().getUserByEmail(email);
+    const uid = userRecord.uid;
 
-      if(!result || result.length === 0){
-        return res.redirect('/login.html?error=notfound');
-      }
+    // 🔥 KUHA SA FIRESTORE
+    const doc = await db.collection("users").doc(uid).get();
 
-      const user = result[0];
-
-      const match = await bcrypt.compare(password,user.password);
-
-      if(!match){
-        return res.redirect('/login.html?error=wrong');
-      }
-
-      req.session.user = {
-        id:user.id,
-        email:user.email,
-        role:user.role
-      };
-
-      if(user.role === "admin"){
-        res.redirect('/admin/dashboard');
-      }else{
-        res.redirect('/');
-      }
-
+    if(!doc.exists){
+      return res.redirect('/login.html?error=notfound');
     }
-  );
+
+    const user = doc.data();
+
+    // 🔥 PASSWORD CHECK (GAMIT OLD HASH MO)
+    const match = await bcrypt.compare(password,user.password);
+
+    if(!match){
+      return res.redirect('/login.html?error=wrong');
+    }
+
+    req.session.user = {
+      id: uid,
+      email: user.email,
+      fullname: user.fullname,
+      role: user.role
+    };
+
+    if(user.role === "admin"){
+      res.redirect('/admin/dashboard');
+    }else{
+      res.redirect('/');
+    }
+
+  }catch(err){
+    console.log(err);
+    return res.redirect('/login.html?error=notfound');
+  }
 
 });
 
@@ -120,42 +135,42 @@ router.get('/logout',(req,res)=>{
   });
 });
 
-router.post('/check-email', (req,res)=>{
+/* CHECK EMAIL */
+router.post('/check-email', async (req,res)=>{
   const {email} = req.body;
 
-  db.query(
-    "SELECT * FROM users WHERE email=?",
-    [email],
-    (err,result)=>{
+  const snapshot = await db.collection("users")
+    .where("email","==",email)
+    .get();
 
-      if(!result || result.length === 0){
-        return res.redirect('/forgot.html?error=notfound');
-      }
+  if(snapshot.empty){
+    return res.redirect('/forgot.html?error=notfound');
+  }
 
-      // 👉 ipapasa natin email sa next page
-      res.redirect(`/reset.html?email=${email}`);
-    }
-  );
+  res.redirect(`/reset.html?email=${email}`);
 });
 
-
+/* RESET PASSWORD */
 router.post('/reset-password', async (req,res)=>{
   const {email,password} = req.body;
 
   const hashed = await bcrypt.hash(password,10);
 
-  db.query(
-    "UPDATE users SET password=? WHERE email=?",
-    [hashed,email],
-    (err)=>{
-      if(err){
-        console.log(err);
-        return res.send("Error updating password");
-      }
+  const snapshot = await db.collection("users")
+    .where("email","==",email)
+    .get();
 
-      res.redirect('/login.html?success=reset');
-    }
-  );
+  if(snapshot.empty){
+    return res.send("User not found");
+  }
+
+  const docId = snapshot.docs[0].id;
+
+  await db.collection("users").doc(docId).update({
+    password: hashed
+  });
+
+  res.redirect('/login.html?success=reset');
 });
 
 module.exports = router;

@@ -69,7 +69,7 @@ container.innerHTML += `
 </div>
 
 ${(b.status || "Pending") === "Pending" ? 
-`<button class="cancel-btn" onclick="cancelBooking(${b.id})">✕</button>` 
+`<button class="cancel-btn" onclick="cancelBooking('${b.id}')">✕</button>` 
 : ""}
 
 </div>
@@ -89,6 +89,7 @@ ${(b.status || "Pending") === "Pending" ?
 /* ================= OPEN MODAL ================= */
 
 function cancelBooking(id){
+console.log("CLICKED ID:", id);
 cancelId = id;
 document.getElementById("cancelModal").style.display="flex";
 }

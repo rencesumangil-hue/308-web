@@ -68,16 +68,14 @@
 <label>Proof of Payment:</label>
 <input type="file" name="proof_of_payment" required>
 <input 
-  type="tel" 
+  type="text" 
   name="mobile_number" 
+  id="mobile_number"
   placeholder="09XXXXXXXXX"
-  pattern="09[0-9]{9}"
   maxlength="11"
-  inputmode="numeric"
   required
-  oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-  oninvalid="this.setCustomValidity('Enter valid PH number (09XXXXXXXXX)')"
-/>
+  oninput="validateNumber(this)"
+>
 
 <button type="submit">Submit Booking</button>
 
@@ -86,7 +84,7 @@
 
 <script>
 
-fetch('/auth/check')
+fetch('/auth/status')
 .then(res => res.json())
 .then(data => {
     if(!data.loggedIn){
@@ -267,6 +265,24 @@ option.style.color = "#888";
 
 /* INIT */
 document.addEventListener("DOMContentLoaded", disablePastTimes);
+
+function validateNumber(input){
+
+  let value = input.value.replace(/[^0-9]/g,'');
+  input.value = value;
+
+  if(value.length === 0){
+    input.setCustomValidity('');
+    return;
+  }
+
+  if(!/^09[0-9]{9}$/.test(value)){
+    input.setCustomValidity("Enter valid PH number (09XXXXXXXXX)");
+  }else{
+    input.setCustomValidity("");
+  }
+
+}
 
 </script>
 

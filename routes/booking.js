@@ -3,10 +3,6 @@ const router = express.Router();
 const db = require('../config/db');
 const multer = require('multer');
 
-/* ============================= */
-/* MULTER UPLOAD CONFIG */
-/* ============================= */
-
 const storage = multer.diskStorage({
 destination:(req,file,cb)=>{
 cb(null,'public/uploads/');
@@ -18,235 +14,225 @@ cb(null,Date.now()+"-"+file.originalname);
 
 const upload = multer({storage});
 
-/* ============================= */
-/* CHECK LOGIN BEFORE BOOKING */
-/* ============================= */
-
+/* CHECK LOGIN */
 router.get('/check',(req,res)=>{
 if(!req.session.user){
 return res.redirect('/login.html');
 }
-
 res.redirect('/booking.html');
 });
 
-/* ============================= */
 /* GET USER BOOKINGS */
-/* ============================= */
-
-router.get('/my',(req,res)=>{
+router.get('/my', async (req,res)=>{
 
 if(!req.session.user){
 return res.json([]);
 }
 
-db.query(
-"SELECT * FROM bookings WHERE user_id=? ORDER BY booking_date DESC",
-[req.session.user.id],
-(err,result)=>{
+try{
 
-if(err){
-console.log(err);
-return res.json([]);
-}
+const snapshot = await db.collection("bookings")
+.where("user_id","==",req.session.user.id)
+.get();
+
+let result = [];
+
+snapshot.forEach(doc=>{
+result.push({
+id: doc.id,
+...doc.data()
+});
+});
 
 res.json(result);
 
-});
+}catch(err){
+console.log(err);
+res.json([]);
+}
 
 });
 
-/* ============================= */
 /* CREATE BOOKING */
-/* ============================= */
-
 router.post('/create', upload.fields([
 {name:'tattoo_reference'},
 {name:'proof_of_payment'}
-]), (req,res)=>{
+]), async (req,res)=>{
 
 if(!req.session.user){
 return res.redirect('/login.html');
 }
 
+try{
+
 const user_id = req.session.user.id;
 const {booking_date, booking_time, mobile_number, tattoo_area} = req.body;
+
+// 🔥 FIX DATE FORMAT
+const formattedDate = new Date(booking_date).toISOString().split("T")[0];
 
 const tattoo = req.files?.tattoo_reference?.[0]?.filename;
 const proof = req.files?.proof_of_payment?.[0]?.filename;
 
-/* ============================= */
-/* CHECK DAILY LIMIT (MAX 3) */
-/* ============================= */
+/* 🔥 DAILY LIMIT */
+const sameDaySnap = await db.collection("bookings")
+.where("booking_date","==",formattedDate)
+.get();
 
-db.query(
-"SELECT COUNT(*) as total FROM bookings WHERE booking_date=? AND status!='Denied'",
-[booking_date],
-(err,result)=>{
+let validDay = [];
 
-if(err){
-console.log(err);
-return res.json({success:false});
+sameDaySnap.forEach(doc=>{
+const status = doc.data().status;
+
+if(status === "Pending" || status === "Accepted"){
+  validDay.push(doc);
 }
+});
 
-if(result[0].total >= 3){
+if(validDay.length >= 3){
 return res.json({
 success:false,
-message:"This date is already fully booked. Please choose another date."
+message:"This date is already fully booked."
 });
 }
 
-/* ============================= */
-/* CHECK SAME TIME SLOT (MAX 2) */
-/* ============================= */
+/* 🔥 TIME SLOT LIMIT */
+const sameTimeSnap = await db.collection("bookings")
+.where("booking_date","==",formattedDate)
+.where("booking_time","==",booking_time)
+.get();
 
-db.query(
-"SELECT COUNT(*) as total FROM bookings WHERE booking_date=? AND booking_time=? AND status!='Denied'",
-[booking_date,booking_time],
-(err,result2)=>{
+let validTime = [];
 
-if(err){
-console.log(err);
-return res.json({success:false});
+sameTimeSnap.forEach(doc=>{
+const status = doc.data().status;
+
+if(status === "Pending" || status === "Accepted"){
+  validTime.push(doc);
 }
+});
 
-if(result2[0].total >= 2){
+if(validTime.length >= 2){
 return res.json({
 success:false,
 message:"This time slot is already full."
 });
 }
 
-/* ============================= */
-/* INSERT BOOKING */
-/* ============================= */
-
-db.query(
-`INSERT INTO bookings
-(user_id,booking_date,booking_time,tattoo_reference,proof_of_payment,mobile_number,tattoo_area,status)
-VALUES (?,?,?,?,?,?,?,?)`,
-[user_id,booking_date,booking_time,tattoo,proof,mobile_number,tattoo_area,"Pending"],
-(err)=>{
-
-if(err){
-console.log(err);
-return res.json({success:false});
-}
+/* INSERT */
+await db.collection("bookings").add({
+  fullname: req.session.user.fullname || req.session.user.email,
+  user_id,
+  booking_date: formattedDate,
+  booking_time,
+  tattoo_reference: tattoo,
+  proof_of_payment: proof,
+  mobile_number,
+  tattoo_area,
+  status: "Pending",
+  created_at: new Date()
+});
 
 res.json({success:true});
 
-});
+}catch(err){
+console.log("BOOKING ERROR:", err);
+res.json({success:false});
+}
 
 });
 
-});
-
-});
-
-
-/* DELETE BOOKING */
-
-
-router.delete('/delete/:id',(req,res)=>{
+/* DELETE */
+router.delete('/delete/:id', async (req,res)=>{
 
 if(!req.session.user){
 return res.json({success:false});
 }
 
+try{
+
 const id = req.params.id;
 
-db.query(
-"DELETE FROM bookings WHERE id=?",
-[id],
-(err)=>{
-
-if(err){
-console.log(err);
-return res.json({success:false});
-}
+await db.collection("bookings").doc(id).delete();
 
 res.json({success:true});
 
-});
-
-});
-
-
-
-
-/* TOTAL BOOKINGS PER DATE */
-
-router.get('/count/:date',(req,res)=>{
-
-const date = req.params.date;
-
-db.query(
-"SELECT COUNT(*) as total FROM bookings WHERE booking_date=? AND status!='Denied'",
-[date],
-(err,result)=>{
-
-if(err){
+}catch(err){
 console.log(err);
-return res.json({total:0});
+res.json({success:false});
 }
 
-res.json({total:result[0].total});
+});
 
+/* ALL BOOKINGS (FOR CALENDAR) */
+router.get('/all', async (req,res)=>{
+
+try{
+
+const snapshot = await db.collection("bookings")
+.where("status","==","Accepted")
+.get();
+
+let result = [];
+
+snapshot.forEach(doc=>{
+
+const data = doc.data();
+
+/* 🔥 FILTER LANG */
+if(data.status !== "Pending" && data.status !== "Accepted") return;
+
+result.push({
+id: doc.id,
+...data
 });
 
 });
-
-/* GET BOOKING TIMES FOR DATE */
-
-router.get('/date-info/:date',(req,res)=>{
-
-const date = req.params.date;
-
-db.query(
-`SELECT booking_time, users.fullname
-FROM bookings
-JOIN users ON bookings.user_id = users.id
-WHERE booking_date=? AND status!='Denied'`,
-[date],
-(err,result)=>{
-
-if(err){
-console.log(err);
-return res.json([]);
-}
 
 res.json(result);
 
-});
-
-});
-
-
-router.get('/all',(req,res)=>{
-
-db.query(
-`SELECT bookings.*, users.fullname 
- FROM bookings 
- JOIN users ON bookings.user_id = users.id
- WHERE bookings.status='Accepted'`,
-(err,result)=>{
-
-if(err){
+}catch(err){
 console.log(err);
-return res.json([]);
+res.json([]);
 }
 
+});
 
-const fixed = result.map(r=>({
-...r,
-booking_date: new Date(r.booking_date).toLocaleDateString('en-CA')
-}));
 
-res.json(fixed);
+/* GET BOOKINGS BY DATE (FOR ADMIN CALENDAR MODAL) */
+router.get('/date-info/:date', async (req,res)=>{
 
+try{
+
+const date = req.params.date;
+
+const snapshot = await db.collection("bookings")
+.where("booking_date","==",date)
+.get();
+
+let result = [];
+
+snapshot.forEach(doc=>{
+
+const data = doc.data();
+
+/* REMOVE FINISHED + DENIED */
+if(data.status === "Finished" || data.status === "Denied") return;
+
+result.push({
+id: doc.id,
+...data
 });
 
 });
-  
+
+res.json(result);
+
+}catch(err){
+console.log("DATE INFO ERROR:", err);
+res.json([]);
+}
+
+});
 
 module.exports = router;

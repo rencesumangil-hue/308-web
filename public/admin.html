@@ -212,32 +212,18 @@ letter-spacing:1px;
 }
 
 
-.day{
-background:#2a2a2a;
-border-radius:12px;
-padding:18px 0;
-text-align:center;
-font-weight:500;
-transition:.25s;
-}
-
-.day:hover{
-background:#333;
-transform:scale(1.05);
-}
-
-.green{
+.calendar-day.green{
 background:linear-gradient(135deg,#1f8f3a,#16a34a);
 box-shadow:0 0 15px rgba(34,197,94,.7);
 }
 
-.yellow{
+.calendar-day.yellow{
 background:linear-gradient(135deg,#facc15,#eab308);
 color:black;
 box-shadow:0 0 15px rgba(250,204,21,.7);
 }
 
-.red{
+.calendar-day.red{
 background:linear-gradient(135deg,#ef4444,#dc2626);
 box-shadow:0 0 15px rgba(239,68,68,.7);
 }
@@ -257,12 +243,14 @@ background:#ff1f1f;
 }
 
 .calendar-container{
+position: relative;
 background:rgba(20,20,20,0.75);
 backdrop-filter:blur(8px);
 padding:25px;
 border-radius:14px;
 border:1px solid rgba(255,255,255,0.05);
 box-shadow:0 0 25px rgba(0,0,0,0.6);
+z-index: 9999;
 }
 
 .calendar-days{
@@ -301,9 +289,11 @@ padding:10px;
 }
 
 .calendar-grid{
+position: relative;
 display:grid;
 grid-template-columns:repeat(7,1fr);
 gap:12px;
+z-index: 9999;
 }
 
 /* ADMIN CALENDAR COLORS */
@@ -321,6 +311,24 @@ color:black;
 .calendar-day.red{
 background:#dc2626 !important;
 color:white;
+}
+
+.calendar-day{
+background:#2a2a2a;
+border-radius:12px;
+padding:18px 0;
+text-align:center;
+font-weight:500;
+transition:.25s;
+cursor:pointer;
+pointer-events:auto;
+position:relative;
+z-index: 9999;
+}
+
+.calendar-day:hover{
+background:#333;
+transform:scale(1.05);
 }
 
 /* ===== TABLE ===== */
@@ -580,7 +588,7 @@ left:0;
 width:100%;
 height:100%;
 background:rgba(0,0,0,0.7);
-display:flex;
+display:none;
 align-items:center;
 justify-content:center;
 z-index:9999;
@@ -855,13 +863,29 @@ fetch('/admin/calendar')
 .then(res=>res.json())
 .then(data=>{
 
+//console.log("🔥 CALENDAR DATA:", data);
+
 bookingCounts = {};
 
 data.forEach(d=>{
+
+//console.log("👉 ITEM:", d);
+
 const date = d.booking_date;
 bookingCounts[date] = d.total;
+
 });
 
+//console.log("✅ COUNTS:", bookingCounts);
+
+renderCalendar();
+
+})
+.catch(err=>{
+
+console.log("❌ ERROR:", err);
+
+/* fallback para lumabas pa rin calendar */
 renderCalendar();
 
 });
@@ -889,6 +913,7 @@ for(let i=0;i<firstDay;i++){
 calendar.innerHTML+="<div></div>";
 }
 
+/* DAYS LOOP */
 for(let day=1;day<=daysInMonth;day++){
 
 let className="calendar-day";
@@ -917,14 +942,24 @@ else if(total >=3){
 className += " red";
 }
 
-
-
+/* ADD HTML */
 calendar.innerHTML+=`
-<div class="${className}" onclick="openDay('${formattedDate}')">
+<div class="${className}" data-date="${formattedDate}">
 ${day}
 </div>
 `;
+
 }
+
+/* 🔥 FIXED CLICK EVENT (ITO ANG IMPORTANT) */
+document.querySelectorAll(".calendar-day").forEach(el => {
+  el.addEventListener("click", function () {
+    const date = this.getAttribute("data-date");
+    //console.log("CLICK WORKING:", date);
+    openDay(date);
+  });
+});
+
 }
 
 function nextMonth(){
@@ -959,6 +994,7 @@ if(b.status==="Denied") denied++;
 document.getElementById("pendingStat").innerText = pending;
 document.getElementById("acceptedStat").innerText = accepted;
 document.getElementById("deniedStat").innerText = denied;
+
 let total = 0;
 
 data.forEach(b=>{
@@ -969,58 +1005,13 @@ total++;
 
 document.getElementById("totalStat").innerText = total;
 
-
-let pendingCount = 0;
-
-const table = document.getElementById("pendingTable");
-table.innerHTML = "";
-
-data.forEach(b=>{
-
-if(b.status.toLowerCase() === "pending"){
-pendingCount++;
-}
-table.innerHTML+=`
-<tr>
-
-<td>${b.fullname}</td>
-<td>${b.mobile_number}</td>
-<td>
-${new Date(b.booking_date).toLocaleDateString("en-PH")} 
-<br>
-${b.booking_time}
-</td>
-<td>${b.tattoo_area}</td>
-<td>
-<img src="/uploads/${b.tattoo_reference}" class="image-preview" onclick="openModal(this.src)">
-</td>
-
-<td>
-<img src="/uploads/${b.proof_of_payment}" class="image-preview" onclick="openModal(this.src)">
-</td>
-
-<td>
-<span class="status-badge ${b.status.toLowerCase()}">
-${b.status}
-</span>
-</td>
-<td class="action-cell">
-
-${b.status === "Pending" ? `
-<button class="acceptBtn" onclick="updateStatus(${b.id},'Accepted')">Accept</button>
-<button class="denyBtn" onclick="updateStatus(${b.id},'Denied')">Deny</button>
-` : ''}
-
-</td>
-</tr>
-`;
-});
-
-
 });
 }
+
 
 function updateStatus(id,status){
+
+console.log("UPDATE:", id, status); 
 
 fetch('/admin/update',{
 method:'POST',
@@ -1032,12 +1023,15 @@ body:JSON.stringify({id,status})
 
 if(data.success){
 
-/* refresh lahat ng tables */
 loadPending();
 loadAcceptedBookings();
 loadDeniedBookings();
+loadBookings();
 liveUpdate();
 
+
+}else{
+alert("Update failed");
 }
 
 });
@@ -1123,7 +1117,7 @@ if(b.status === "Accepted"){
 
 table.innerHTML+=`
 <tr>
-<td>${b.fullname}</td>
+<td>${b.fullname || "Client"}</td>
 <td>${b.mobile_number}</td>
 <td>
 ${new Date(b.booking_date).toLocaleDateString("en-PH")} 
@@ -1149,7 +1143,7 @@ onclick="openModal(this.src)">
 <td>
 <span class="status-badge accepted">Accepted</span>
 
-<button onclick="finishBooking(${b.id})" 
+<button onclick="finishBooking('${b.id}')"
 style="background:#3b82f6;color:white;padding:5px 10px;border-radius:6px;margin-left:5px;">
 ✔
 </button>
@@ -1181,7 +1175,7 @@ if(b.status === "Pending"){
 
 table.innerHTML+=`
 <tr>
-<td>${b.fullname}</td>
+<td>${b.fullname || "Client"}</td>
 <td>${b.mobile_number}</td>
 <td>
 ${new Date(b.booking_date).toLocaleDateString("en-PH")} 
@@ -1209,8 +1203,8 @@ onclick="openModal(this.src)">
 </td>
 
 <td>
-<button onclick="updateStatus(${b.id},'Accepted')" class="acceptBtn">Accept</button>
-<button onclick="updateStatus(${b.id},'Denied')" class="denyBtn">Deny</button>
+<button onclick="updateStatus('${b.id}','Accepted')" class="acceptBtn">Accept</button>
+<button onclick="updateStatus('${b.id}','Denied')" class="denyBtn">Deny</button>
 </td>
 
 </tr>
@@ -1239,7 +1233,7 @@ if(b.status === "Denied"){
 
 table.innerHTML+=`
 <tr>
-<td>${b.fullname}</td>
+<td>${b.fullname || "Client"}</td>
 <td>${b.mobile_number}</td>
 <td>
 ${new Date(b.booking_date).toLocaleDateString("en-PH")} 
@@ -1268,7 +1262,7 @@ onclick="openModal(this.src)">
 
 <span class="status-badge denied">Denied</span>
 
-<button class="cancel-btn" onclick="deleteDenied(${b.id})">✕</button>
+<button class="cancel-btn" onclick="deleteDenied('${b.id}')">✕</button>
 
 </td>
 
@@ -1318,8 +1312,7 @@ document.getElementById("totalStat").innerText = total;
 }
 
 setInterval(()=>{
-liveUpdate();
-loadAccepted(); 
+liveUpdate(); // stats lang
 },3000);
 
 
@@ -1416,7 +1409,7 @@ if(b.status === "Finished"){
 
 table.innerHTML+=`
 <tr>
-<td>${b.fullname}</td>
+<td>${b.fullname || "Client"}</td>
 <td>${b.mobile_number}</td>
 <td>
 ${new Date(b.booking_date).toLocaleDateString("en-PH")} 
@@ -1452,6 +1445,8 @@ function openDay(date){
 fetch('/booking/date-info/' + date)
 .then(res=>res.json())
 .then(data=>{
+
+//console.log("CLICKED DATE:", date);
 
 let html = `<h3>${date}</h3><br>`;
 
@@ -1491,6 +1486,7 @@ Close
 `;
 
 document.body.appendChild(modal);
+modal.style.display = "flex";
 
 }
 

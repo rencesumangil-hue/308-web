@@ -3,7 +3,7 @@ const router = express.Router();
 const db = require('../config/db');
 const path = require('path');
 
-/* DASHBOARD PAGE */
+/* DASHBOARD */
 router.get('/dashboard',(req,res)=>{
 
 if(!req.session.user || req.session.user.role !== "admin"){
@@ -15,95 +15,102 @@ res.sendFile(path.join(__dirname,'../public/admin.html'));
 });
 
 /* ALL BOOKINGS */
-router.get('/bookings',(req,res)=>{
+router.get('/bookings', async (req,res)=>{
 
 if(!req.session.user || req.session.user.role!=='admin'){
 return res.json([]);
 }
 
-db.query(`
-SELECT bookings.*, users.fullname
-FROM bookings
-JOIN users ON bookings.user_id = users.id
-ORDER BY booking_date ASC
-`,(err,result)=>{
+const snapshot = await db.collection("bookings").get();
 
-if(err){
-console.log(err);
-return res.json([]);
-}
+let result = [];
+
+snapshot.forEach(doc=>{
+result.push({
+id: doc.id,
+...doc.data()
+});
+});
 
 res.json(result);
 
 });
 
-});
-
-/* CALENDAR (ACCEPTED ONLY) */
-router.get('/calendar',(req,res)=>{
-
-db.query(`
-SELECT booking_date, COUNT(*) as total
-FROM bookings
-WHERE status='Accepted'
-GROUP BY booking_date
-`,(err,result)=>{
-
-if(err){
-console.log(err);
-return res.json([]);
-}
-
-
-const fixed = result.map(r=>({
-booking_date: r.booking_date.toLocaleDateString('en-CA'),
-total: r.total
-}));
-
-res.json(fixed);
-
-});
-
-});
-
 /* UPDATE STATUS */
-router.post('/update',(req,res)=>{
-    const {id,status} = req.body;
+router.post('/update', async (req,res)=>{
+const {id,status} = req.body;
 
-    db.query(
-        "UPDATE bookings SET status=? WHERE id=?",
-        [status,id],
-        (err,result)=>{
-            if(err){
-                console.log(err);
-                return res.json({success:false});
-            }
-
-            if(result.affectedRows === 0){
-                return res.json({success:false});
-            }
-
-            res.json({success:true});
-        }
-    );
+await db.collection("bookings").doc(id).update({
+status: status
 });
 
+res.json({success:true});
+});
 
-router.post('/add-note',(req,res)=>{
+/* ADD NOTE */
+router.post('/add-note', async (req,res)=>{
 
 const {id,note} = req.body;
 
-db.query(
-"UPDATE bookings SET admin_note=?, client_seen=0 WHERE id=?",
-[note,id],
-(err)=>{
-if(err) return res.json({success:false});
+await db.collection("bookings").doc(id).update({
+admin_note: note,
+client_seen: 0
+});
+
 res.json({success:true});
-}
-);
 
 });
 
 
-module.exports = router;
+/* ================= CALENDAR DATA ================= */
+router.get('/calendar', async (req,res)=>{
 
+if(!req.session.user || req.session.user.role !== "admin"){
+return res.json([]);
+}
+
+try{
+
+const snapshot = await db.collection("bookings").get();
+
+let result = {};
+
+snapshot.forEach(doc=>{
+
+const data = doc.data();
+
+/* 🔥 ACCEPTED LANG */
+if(data.status !== "Accepted") return;
+
+/* 🔥 FIX DATE FORMAT */
+const date = new Date(data.booking_date)
+.toISOString()
+.split('T')[0];
+
+/* COUNT */
+if(!result[date]) result[date] = 0;
+
+result[date]++;
+
+});
+
+/* CONVERT TO ARRAY */
+let final = [];
+
+for(let d in result){
+final.push({
+booking_date: d,
+total: result[d]
+});
+}
+
+res.json(final);
+
+}catch(err){
+console.log("CALENDAR ERROR:", err);
+res.json([]);
+}
+
+});
+
+module.exports = router;
