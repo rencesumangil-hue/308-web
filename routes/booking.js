@@ -55,24 +55,26 @@ res.json([]);
 
 /* CREATE BOOKING */
 router.post('/create', upload.fields([
-{name:'tattoo_reference'},
-{name:'proof_of_payment'}
+{ name:'tattoo_reference', maxCount:1 },
+  { name:'proof_of_payment', maxCount:1 }
 ]), async (req,res)=>{
 
-if(!req.session.user){
-return res.redirect('/login.html');
+if(!req.session.user && !req.body.user_id){
+  return res.json({ success:false, message:"Not logged in" });
 }
 
 try{
 
-const user_id = req.session.user.id;
+const user_id = req.body.user_id || req.session?.user?.id;
 const {booking_date, booking_time, mobile_number, tattoo_area} = req.body;
 
 // 🔥 FIX DATE FORMAT
 const formattedDate = new Date(booking_date).toISOString().split("T")[0];
 
 const tattoo = req.files?.tattoo_reference?.[0]?.filename;
-const proof = req.files?.proof_of_payment?.[0]?.filename;
+const proof = req.files?.proof_of_payment?.[0]?.filename || null;
+
+
 
 /* 🔥 DAILY LIMIT */
 const sameDaySnap = await db.collection("bookings")
@@ -187,6 +189,7 @@ id: doc.id,
 ...data
 });
 
+
 });
 
 res.json(result);
@@ -217,7 +220,7 @@ snapshot.forEach(doc=>{
 const data = doc.data();
 
 /* REMOVE FINISHED + DENIED */
-if(data.status === "Finished" || data.status === "Denied") return;
+if(data.status !== "Accepted") return;
 
 result.push({
 id: doc.id,
