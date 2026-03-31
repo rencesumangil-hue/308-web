@@ -68,7 +68,7 @@ try{
 const user_id = req.body.user_id || req.session?.user?.id;
 const {booking_date, booking_time, mobile_number, tattoo_area} = req.body;
 
-// 🔥 FIX DATE FORMAT
+//  FIX DATE FORMAT
 const formattedDate = new Date(booking_date).toISOString().split("T")[0];
 
 const tattoo = req.files?.tattoo_reference?.[0]?.filename;
@@ -76,7 +76,7 @@ const proof = req.files?.proof_of_payment?.[0]?.filename || null;
 
 
 
-/* 🔥 DAILY LIMIT */
+/*  DAILY LIMIT */
 const sameDaySnap = await db.collection("bookings")
 .where("booking_date","==",formattedDate)
 .get();

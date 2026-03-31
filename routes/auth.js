@@ -18,7 +18,7 @@ router.post('/register', async (req,res)=>{
 
   try{
 
-    // 🔥 CREATE SA FIREBASE AUTH
+    //  CREATE SA FIREBASE AUTH
     const userRecord = await admin.auth().createUser({
       email,
       password
@@ -26,10 +26,10 @@ router.post('/register', async (req,res)=>{
 
     const uid = userRecord.uid;
 
-    // 🔥 HASH (KEEP MO OLD SYSTEM STYLE)
+    //  HASH (KEEP MO OLD SYSTEM STYLE)
     const hashed = await bcrypt.hash(password,10);
 
-    // 🔥 SAVE SA FIRESTORE
+    //  SAVE SA FIRESTORE
     await db.collection("users").doc(uid).set({
       fullname,
       email,
@@ -52,7 +52,7 @@ router.post('/login', async (req,res)=>{
 
   const {email,password, "g-recaptcha-response": captcha} = req.body;
 
-  /*/ 🔥 CAPTCHA (UNCHANGED)
+  CAPTCHA (UNCHANGED)
   if(!captcha){
     return res.redirect('/login.html?error=captcha');
   }
@@ -75,15 +75,15 @@ router.post('/login', async (req,res)=>{
 
   }catch(err){
     return res.redirect('/login.html?error=captcha');
-  }*/
+  }
 
   try{
 
-    // 🔥 CHECK SA FIREBASE AUTH
+    //  CHECK SA FIREBASE AUTH
     const userRecord = await admin.auth().getUserByEmail(email);
     const uid = userRecord.uid;
 
-    // 🔥 KUHA SA FIRESTORE
+    //  KUHA SA FIRESTORE
     const doc = await db.collection("users").doc(uid).get();
 
     if(!doc.exists){
@@ -92,7 +92,7 @@ router.post('/login', async (req,res)=>{
 
     const user = doc.data();
 
-    // 🔥 PASSWORD CHECK (GAMIT OLD HASH MO)
+    //  PASSWORD CHECK (GAMIT OLD HASH MO)
     const match = await bcrypt.compare(password,user.password);
 
     if(!match){

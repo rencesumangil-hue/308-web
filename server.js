@@ -7,9 +7,33 @@ const path = require('path');
 const bcrypt = require('bcryptjs');
 const db = require('./config/db');
 
+const helmet = require('helmet'); 
+const csrf = require('csurf'); 
+const cookieParser = require('cookie-parser'); 
+
 const app = express();
 const admin = require('firebase-admin');
 
+/*  SECURITY  */
+
+//  CLICKJACKING 
+app.use(
+  helmet({
+    contentSecurityPolicy: false
+  })
+);
+
+
+app.use(
+  helmet.frameguard({
+    action: "deny"
+  })
+);
+
+//  COOKIE PARSER FOR CSRF
+app.use(cookieParser());
+
+/*  STATIC  */
 
 app.use('/uploads', express.static('uploads'));
 
@@ -37,12 +61,27 @@ app.use((req,res,next)=>{
   next();
 });
 
-/* ROUTES */
-app.use('/auth', require('./routes/auth'));
-app.use('/booking', require('./routes/booking'));
-app.use('/admin', require('./routes/admin'));
+/*  CSRF  */
 
-/* CREATE ADMIN (FIRST RUN ONLY) */
+
+const csrfProtection = csrf({ cookie: true });
+
+//  TOKEN ROUTE 
+app.get('/csrf-token', csrfProtection, (req, res) => {
+  res.json({ csrfToken: req.csrfToken() });
+});
+
+/*  ROUTES  */
+
+//  auth 
+app.use('/auth', require('./routes/auth'));
+app.use('/admin', csrfProtection, require('./routes/admin'));
+
+//  booking csrf
+app.use('/booking', require('./routes/booking'));
+
+/*  ADMIN  */
+
 app.get('/fix-admin', async (req,res)=>{
 
   const bcrypt = require('bcryptjs');
@@ -52,19 +91,16 @@ app.get('/fix-admin', async (req,res)=>{
 
   try{
 
-    // 🔥 get user sa Firebase Auth
     const userRecord = await admin.auth().getUserByEmail(email);
     const uid = userRecord.uid;
 
-    // 🔥 gumawa ng hash
     const hashed = await bcrypt.hash(password,10);
 
-    // 🔥 update Firestore
     await db.collection("users").doc(uid).update({
       password: hashed
     });
 
-    res.send("Admin password fixed ✅");
+    res.send("Admin password fixed ");
 
   }catch(err){
     console.log(err);
@@ -73,7 +109,8 @@ app.get('/fix-admin', async (req,res)=>{
 
 });
 
-/* HOME PAGE */
+/* HOME  */
+
 app.get('/',(req,res)=>{
   res.sendFile(path.join(__dirname,'public/index.html'));
 });
@@ -86,10 +123,10 @@ app.get('/auth/status', (req, res) => {
     }
 });
 
-/* SERVER */
+/*SERVER */
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT,()=>{
   console.log("🚀 Server running on port",PORT);
 });
-
